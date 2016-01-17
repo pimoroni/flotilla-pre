@@ -1,3 +1,58 @@
 #!/bin/bash
 
+pkgdeplist=( "libboost-system1.50.0" "libboost-filesystem1.50.0" "libboost-program-options1.50.0" )
+
 sudo apt-get install libboost-system1.50.0 libboost-date-time1.50.0 libboost-filesystem1.50.0 libboost-program-options1.50.0
+
+apt_pkg_req () {
+    APT_CHK=$(dpkg-query -W --showformat='${Status}\n' $1|grep "install ok installed")
+
+    if [ "" == "$APT_CHK" ]; then
+        true
+    else
+        false
+    fi
+}
+
+if [ $(id -u) -ne 0 ]; then
+    printf "Install must be run as root. Try 'sudo ./install'\n"
+    exit 1
+fi
+
+for pkgdep in ${pkgdeplist[@]}
+    do if apt_pkg_req "$pkgdep" ; then
+        updatedb=true
+    fi
+    done
+
+if $updatedb ; then
+    printf "\nUpdating package indexes..."
+    sudo apt-get update
+fi
+
+for pkgdep in ${pkgdeplist[@]}
+    do printf "Checking for dependencies...\n"
+    if apt_pkg_req "$pkgdep" ; then
+        sudo apt-get --yes --force-yes install "$pkgdep"
+    fi
+done
+
+if [ -f /usr/local/lib/libserialport.so.0.0.0 ]; then
+    printf "libserialport already installed. Updating...\n"
+fi
+
+cp ./dependencies/libs/libserialport* /usr/local/lib/
+
+if [ ! -f /usr/local/lib/libserialport.so.0 ]; then
+    ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so.0
+fi
+
+if [ ! -f /usr/local/lib/libserialport.so ]; then
+    ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so
+fi
+chown root:staff /usr/local/lib/libserialport*
+ldconfig
+
+echo "\nAll done!\n"
+
+exit 0
