@@ -13,9 +13,11 @@ apt_pkg_req () {
 }
 
 if [ $(id -u) -ne 0 ]; then
-    printf "Install must be run as root. Try 'sudo ./install'\n"
+    echo -e "Install must be run as root. Try 'sudo ./install'\n"
     exit 1
 fi
+
+updatedb=false
 
 for pkgdep in ${pkgdeplist[@]}
     do if apt_pkg_req "$pkgdep" ; then
@@ -24,19 +26,19 @@ for pkgdep in ${pkgdeplist[@]}
     done
 
 if $updatedb ; then
-    printf "\nUpdating package indexes..."
+    echo -e "\nUpdating package indexes..."
     sudo apt-get update
 fi
 
 for pkgdep in ${pkgdeplist[@]}
-    do printf "Checking for dependencies...\n"
+    do echo -e "Checking for dependencies...\n"
     if apt_pkg_req "$pkgdep" ; then
         sudo apt-get --yes --force-yes install "$pkgdep"
     fi
 done
 
 if [ -f /usr/local/lib/libserialport.so.0.0.0 ]; then
-    printf "libserialport already installed. Updating...\n"
+    echo -e "libserialport already installed. Updating...\n"
 fi
 
 cp ./dependencies/libs/libserialport* /usr/local/lib/
@@ -51,6 +53,6 @@ fi
 chown root:staff /usr/local/lib/libserialport*
 ldconfig
 
-echo "\nAll done!\n"
+echo -e "\nAll done!\n"
 
 exit 0
