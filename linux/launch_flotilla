@@ -10,7 +10,7 @@ raspbian_old () {
     fi
 }
 
-if [ ! -f /etc/init.d/flotillad ]; then
+if [ -f /etc/init.d/flotillad ]; then
     echo -e "Stopping Flotilla Deamon...\n"
     sudo service flotillad stop
 fi
@@ -23,7 +23,9 @@ else
     ./flotillad/flotilla-wheezy &
 fi
 
-cd ./rockpool
-python ./rockpool.py
+if [ "$DISPLAY" ]; then
+    cd ./rockpool
+    python ./rockpool.py
+fi
 
 exit 0
