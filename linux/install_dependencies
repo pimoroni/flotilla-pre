@@ -26,19 +26,19 @@ for pkgdep in ${pkgdeplist[@]}
     done
 
 if $updatedb ; then
-    echo -e "\nUpdating package indexes..."
+    echo -e "Updating package indexes..."
     sudo apt-get update
 fi
 
 for pkgdep in ${pkgdeplist[@]}
-    do echo -e "Checking for dependencies...\n"
+    do echo -e "Checking for dependencies..."
     if apt_pkg_req "$pkgdep" ; then
         sudo apt-get --yes --force-yes install "$pkgdep"
     fi
 done
 
 if [ -f /usr/local/lib/libserialport.so.0.0.0 ]; then
-    echo -e "libserialport already installed. Updating...\n"
+    echo -e "libserialport already installed. Updating..."
 fi
 
 cp ./dependencies/libs/libserialport* /usr/local/lib/
@@ -53,6 +53,6 @@ fi
 chown root:staff /usr/local/lib/libserialport*
 ldconfig
 
-echo -e "\nAll done!\n"
+echo -e "All done!\n"
 
 exit 0

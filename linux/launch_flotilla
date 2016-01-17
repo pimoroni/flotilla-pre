@@ -11,11 +11,11 @@ raspbian_old () {
 }
 
 if [ ! -f /etc/init.d/flotillad ]; then
-    echo "Stopping Flotilla Deamon...\n"
+    echo -e "Stopping Flotilla Deamon...\n"
     sudo service flotillad stop
 fi
 
-echo "Launching Flotilla pre-release...\n"
+echo -e "Launching Flotilla pre-release...\n"
 
 if ! raspbian_old; then
     ./flotillad/flotilla-jessie &
