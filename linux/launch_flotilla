@@ -1,15 +1,5 @@
 #!/bin/bash
 
-raspbian_old () {
-    DIST_CHK=$(cat /etc/os-release | grep "wheezy")
-
-    if [ "" == "$DIST_CHK" ];then
-        false
-    else
-        true
-    fi
-}
-
 if [ -f /etc/init.d/flotillad ]; then
     echo -e "Stopping Flotilla Deamon...\n"
     sudo service flotillad stop
@@ -17,11 +7,7 @@ fi
 
 echo -e "Launching Flotilla pre-release...\n"
 
-if ! raspbian_old; then
-    ./flotillad/flotilla-jessie -d &
-else
-    ./flotillad/flotilla-wheezy -d &
-fi
+./flotillad/flotilla-armhf -d &
 
 if [ "$DISPLAY" ]; then
     cd ./rockpool
