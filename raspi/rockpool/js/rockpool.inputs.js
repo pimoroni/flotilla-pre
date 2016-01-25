@@ -23,26 +23,26 @@ rockpool.pressed={
 rockpool.inputs = {
     /*high: function () {
         this.name = "On"
-        this.icon = "css/images/icons/icon-on.png"
+        this.icon = "on"
         this.bgColor = rockpool.palette.blue
         this.category = rockpool.category.generators
         this.get = function () { return 1 }
     },
     low: function () {
         this.name = "Off"
-        this.icon = "css/images/icons/icon-off.png"
+        this.icon = "off"
         this.bgColor = rockpool.palette.blue
         this.category = rockpool.category.generators
         this.get = function () { return 0 }
     },*/
     state: function() {
         this.name = "Value"
-        this.icon = "css/images/icons/icon-half.png"
+        this.icon = "half"
         this.bgColor = rockpool.palette.blue
         this.category = rockpool.category.generators
 
         this.options = [
-                {name:'Off',   value: 0.0, icon: "css/images/icons/icon-off.png" },
+                {name:'Off',   value: 0.0, icon: "off" },
                 {name:'10%',   value: 0.1 },
                 {name:'20%',   value: 0.2 },
                 {name:'30%',   value: 0.3 },
@@ -52,7 +52,7 @@ rockpool.inputs = {
                 {name:'70%',   value: 0.7 },
                 {name:'80%',   value: 0.8 },
                 {name:'90%',   value: 0.9 },
-                {name:'On',    value: 1.0, icon: "css/images/icons/icon-on.png" }
+                {name:'On',    value: 1.0, icon: "on" }
             ]
 
         this.get = function ( options ) {
@@ -62,18 +62,18 @@ rockpool.inputs = {
     pattern: function () {
         this.name = "Pattern"
         this.sindex = 0
-        this.icon = "css/images/icons/icon-random.png"
+        this.icon = "random"
         this.bgColor = rockpool.palette.blue
         this.category = rockpool.category.generators
 
         this.options = [
-                {category: 'Waveforms', name:'Sine',     sequence: function(){ return (Math.sin(rockpool.time/10) + 1.0) / 2.0 }, icon: "css/images/icons/icon-sine.png"},
-                {category: 'Waveforms', name:'Random',   sequence: function(){ return Math.random() }, icon: "css/images/icons/icon-random.png" },
-                {category: 'Waveforms', name:'Pulse',    sequence: function(){ return 1.0 - (((rockpool.time/10) % 10) / 10.0);}, icon: "css/images/icons/icon-pulse.png"}, // [0, 0.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-                {category: 'Waveforms', name:'Square',   sequence: function(){ return Math.round(rockpool.time/10) % 2;}, icon: "css/images/icons/icon-square.png"}, // [0, 0, 1, 1]
-                {category: 'Waveforms', name:'Triangle', sequence: function(){ return Math.abs(((rockpool.time/10)%10)-5)/5.0;console.log(r);}, icon: "css/images/icons/icon-triangle.png"}, // [0, 0.5, 1, 0.5]
-                {category: 'Waveforms', name:'Saw',      sequence: function(){ return (((rockpool.time/10) % 5) / 5.0);}, icon: "css/images/icons/icon-saw.png"}, //[1,0.5,0]
-                {category: 'Waveforms', name:'Clock',    sequence: function(){ return ((rockpool.time/10) % 2) / 2.0;}, icon: "css/images/icons/icon-clock.png"} // function(){ var d = new Date(); return d.getTime() % 2;}
+                {category: 'Waveforms', name:'Sine',     sequence: function(){ return (Math.sin(rockpool.time/10) + 1.0) / 2.0 }, icon: "sine"},
+                {category: 'Waveforms', name:'Random',   sequence: function(){ return Math.random() }, icon: "random" },
+                {category: 'Waveforms', name:'Pulse',    sequence: function(){ return 1.0 - (((rockpool.time/10) % 10) / 10.0);}, icon: "pulse"}, // [0, 0.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+                {category: 'Waveforms', name:'Square',   sequence: function(){ return Math.round(rockpool.time/10) % 2;}, icon: "square"}, // [0, 0, 1, 1]
+                {category: 'Waveforms', name:'Triangle', sequence: function(){ return Math.abs(((rockpool.time/10)%10)-5)/5.0;console.log(r);}, icon: "triangle"}, // [0, 0.5, 1, 0.5]
+                {category: 'Waveforms', name:'Saw',      sequence: function(){ return (((rockpool.time/10) % 5) / 5.0);}, icon: "saw"}//, //[1,0.5,0]
+                //{category: 'Waveforms', name:'Clock',    sequence: function(){ return ((rockpool.time/10) % 2) / 2.0;}, icon: "clock"} // function(){ var d = new Date(); return d.getTime() % 2;}
             ]
 
         this.get = function ( options ) {
@@ -99,14 +99,14 @@ if(window.DeviceMotionEvent) {
 
     rockpool.inputs.tilt = function() {
         this.name = "Tilt"
-        this.icon = "css/images/icons/icon-sine.png"
+        this.icon = "sine"
         this.bgColor = rockpool.palette.blue
         this.category = rockpool.category.generators
 
         this.options = [
-            {category: 'Tilt', name: 'X', icon: "css/images/icons/icon-sine.png"},
-            {category: 'Tilt', name: 'Y', icon: "css/images/icons/icon-sine.png"},
-            {category: 'Tilt', name: 'Z', icon: "css/images/icons/icon-sine.png"},
+            {category: 'Tilt', name: 'X', icon: "sine"},
+            {category: 'Tilt', name: 'Y', icon: "sine"},
+            {category: 'Tilt', name: 'Z', icon: "sine"},
         ]
 
         this.get = function(options){
@@ -140,25 +140,25 @@ rockpool.enable_keyboard = function(){
         rockpool.inputs.keyboard = function () {
             this.name = "Keyboard"
             this.keys = []
-            this.icon = "css/images/icons/icon-keyboard.png"
+            this.icon = "keyboard"
             this.bgColor = rockpool.palette.blue
             this.category = rockpool.category.generators
 
             this.options = [
-                    {category: 'Keyboard Key', name:"UP/W",     keys:[87, 38], icon: "css/images/icons/icon-keyboard-up.png"},
-                    {category: 'Keyboard Key', name:"DOWN/S",   keys:[83, 40], icon: "css/images/icons/icon-keyboard-down.png"},
-                    {category: 'Keyboard Key', name:"LEFT/A",   keys:[65, 37], icon: "css/images/icons/icon-keyboard-left.png"},
-                    {category: 'Keyboard Key', name:"RIGHT/D",  keys:[68, 39], icon: "css/images/icons/icon-keyboard-right.png"},
-                    {category: 'Keyboard Key', name:"0",        keys:[48], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"1",        keys:[49], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"2",        keys:[50], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"3",        keys:[51], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"4",        keys:[52], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"5",        keys:[53], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"6",        keys:[54], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"7",        keys:[55], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"8",        keys:[56], icon: "css/images/icons/icon-keyboard-number.png"},
-                    {category: 'Keyboard Key', name:"9",        keys:[57], icon: "css/images/icons/icon-keyboard-number.png"},
+                    {category: 'Keyboard Key', name:"UP/W",     keys:[87, 38], icon: "keyboard-up"},
+                    {category: 'Keyboard Key', name:"DOWN/S",   keys:[83, 40], icon: "keyboard-down"},
+                    {category: 'Keyboard Key', name:"LEFT/A",   keys:[65, 37], icon: "keyboard-left"},
+                    {category: 'Keyboard Key', name:"RIGHT/D",  keys:[68, 39], icon: "keyboard-right"},
+                    {category: 'Keyboard Key', name:"0",        keys:[48], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"1",        keys:[49], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"2",        keys:[50], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"3",        keys:[51], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"4",        keys:[52], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"5",        keys:[53], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"6",        keys:[54], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"7",        keys:[55], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"8",        keys:[56], icon: "keyboard-number"},
+                    {category: 'Keyboard Key', name:"9",        keys:[57], icon: "keyboard-number"},
                 ]
             this.get = function(options){
                 var x = options ? options.keys.length : this.keys.length

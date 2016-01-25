@@ -54,10 +54,11 @@ rockpool.widget =  function( type, rule, key ) {
         if(this.dom_update_needed || force == true){
             this.dom_update_needed = false;
 
-            this.setLabel(   this.getOption('name') )
-            this.setSubType( this.getOption('type') )
-            this.setBgColor( this.getOption('bgColor') )
-            this.setIcon(    this.getOption('icon') )
+            this.setLabel(   this.getOption('name') );
+            this.setSubType( this.getOption('type') );
+            this.setIcon(    this.getOption('icon') );
+
+            var color = this.getOption('color');
 
             if(this.isComparator()){
                 rule.updateDom();
@@ -121,33 +122,24 @@ rockpool.widget =  function( type, rule, key ) {
                 })
             }
 
-            /*this.icon.removeClass(function(index, css){
-                return (css.match (/(^|\s)sprite-\S+/g) || []).join(' ');
-            })*/
-            this.icon.attr('class','sprite');
+            this.dom.attr('class','pure-u-1-5 center block');
 
-
-            //this.dom.removeClass('converter decider');
-            this.dom.attr('class','pure-u-1-6 center block');
-
+            this.dom.addClass('color-' + color);
             this.dom.addClass(type + ' ' + (this.subtype?this.subtype:''));
-            this.dom.addClass(this.getOption('name').toLowerCase().replace(' ','-'));
+            this.dom.addClass('name-' + this.getOption('name').toLowerCase().replace(' ','-'));
 
             if ( this.handler.name == "Empty" ){
-                //this.dom.addClassdecider
-                this.icon.addClass('sprite-block-add');
+                this.dom.addClass('empty');
             }
             else if( this.isComparator() ){
                 this.dom.addClass('decider');
-                this.icon.addClass('sprite-block-decider');
             }
             else if( this.isConverter() ){
                 this.dom.addClass('converter');
-                this.icon.addClass('sprite-block-converter');
             }
             else
             {
-                this.icon.addClass('sprite-block-' + this.type);
+                this.dom.addClass('type-' + this.type);
             }
 
             if(this.getOption('category')){
@@ -162,22 +154,17 @@ rockpool.widget =  function( type, rule, key ) {
     }
 
     this.setLabel = function( label ){
-        var channel = typeof(this.handler.channel) !== 'undefined' ? ' (' + rockpool.channelToNumber(this.handler.channel) + ')' : '';
+        var channel = typeof(this.handler.channel) !== 'undefined' ? ' <span>' + rockpool.channelToNumber(this.handler.channel) + '</span>' : '';
         this.dom.find('.name').html( rockpool.languify(label) + channel )
     }
 
     this.setSubType = function( subtype ){
         this.subtype = subtype;
-        //this.dom.addClass(type + ' ' + (subtype?subtype:''));
-    }
-
-    this.setBgColor = function( bgColor ){
-        if(!bgColor) return;
-        this.dom.find('.icon').css({color:bgColor})
     }
 
     this.setIcon = function( icon ){
-        this.img.attr('src', icon ? icon : 'css/images/icon-empty.png');
+        this.img.attr('src', icon ? 'css/images/icons/icon-' + icon + '.png' : 'css/images/icon-empty.png');
+        this.dom.find('i').addClass('icon-' + icon);
         this.dom.find('.icon').append(((this.type != 'converter' && !isNaN(this.handler.channel)) ? ' <span class="channel">' + rockpool.channelToNumber(this.handler.channel) + '</span>' : ''))
     }
 
@@ -198,7 +185,14 @@ rockpool.widget =  function( type, rule, key ) {
         this.history = this.history.slice(Math.max(this.history.length - 500, 0))
 
         if( this.isInput() ){
-            this.inspector.text(Math.round(value*1000).toString());
+            var raw = Math.round(value*1000).toString();
+            if( this.handler.raw ){
+                raw = this.handler.raw(this.options) + '<small>' + raw +  '</small>';
+            }
+            if( raw != this.last_inspector_value ){
+                this.inspector.html(raw);
+                this.last_inspector_value = raw;
+            }
         }
 
         return value
@@ -219,7 +213,11 @@ rockpool.widget =  function( type, rule, key ) {
         }
 
         if( this.isOutput() ){
-            this.inspector.text(Math.round(value*1000).toString());
+            var raw = Math.round(value*1000).toString();
+            if( raw != this.last_inspector_value ){
+                this.inspector.html(raw);
+                this.last_inspector_value = raw;
+            }
         }
 
         if(this.handler.set){
@@ -286,7 +284,6 @@ rockpool.widget =  function( type, rule, key ) {
                 return false;
             }
 
-            //this.drawChartQuadratic(canvas.width, canvas.height, context, values);
             this.drawChartLines(canvas.width, canvas.height, context, values);
 
             /*
@@ -299,7 +296,7 @@ rockpool.widget =  function( type, rule, key ) {
             gradient = context.createLinearGradient(0, 0, canvas.width, 0)
             gradient.addColorStop(0.0, "rgba(255, 255, 255, 0.0)");
             gradient.addColorStop(0.1, "rgba(255, 255, 255, 1.0)");
-            gradient.addColorStop(0.5, "rgba(255, 255, 255, 1.0)");
+            gradient.addColorStop(0.9, "rgba(255, 255, 255, 1.0)");
             gradient.addColorStop(1.0, "rgba(255, 255, 255, 0.0)");
             context.fillStyle = gradient;
             context.fillRect(0, 0, canvas.width, canvas.height);
@@ -313,7 +310,7 @@ rockpool.widget =  function( type, rule, key ) {
 
         this.canvas.attr({
             'height': this.graph.height() + 'px',
-            'width':  this.graph.width()  + 'px'
+            'width':  (this.graph.width() - 36)  + 'px'
         });
 
         if(this.canvas[0].getContext) {
@@ -333,6 +330,7 @@ rockpool.widget =  function( type, rule, key ) {
     }
 
     this.option_index = -1;
+    this.last_inspector_value = 0;
 
     this.type        = type;
     this.subtype     = null;
@@ -355,13 +353,14 @@ rockpool.widget =  function( type, rule, key ) {
 
     this.dom_update_needed = true;
 
-    this.dom       = $('<div class="pure-u-1-6 center block">');
-    this.icon      = $('<i class="sprite sprite-block-input">').appendTo(this.dom);
-    this.graph     = $('<div class="graph">').appendTo(this.dom);
+    this.dom       = $('<div class="pure-u-1-5 center block">');
+    this.icon      = $('<i>').appendTo(this.dom);
+    this.grah      = null;
 
     this.inspector = $('<div class="inspector">0</div>').appendTo(this.icon);
 
     if( type != 'output' ){
+        this.graph  = $('<div class="graph">').appendTo(this.dom);
         this.canvas = $('<canvas>').appendTo(this.graph);
         this.updateCanvas();
     }
@@ -374,9 +373,19 @@ rockpool.widget =  function( type, rule, key ) {
 
     var widget = this;
 
+
     this.dom
-    .on('click',function(e){
+    .on('click', '.inspector', function(e){
         e.preventDefault();
+        e.stopPropagation();
+
+        $(this).toggleClass('detail');
+    })
+    .on('click','i',function(e){
+        e.preventDefault();
+        rockpool.add(type,rule,widget.dom.index());
+
+        /*
         if(widget.hasOptions()){
             if(rockpool.isModalOpen()){
                 rockpool.closeModal();
@@ -392,6 +401,7 @@ rockpool.widget =  function( type, rule, key ) {
         {
             rockpool.add(type,rule,widget.dom.index());
         }
+        */
         return false;
     })
 
