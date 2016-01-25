@@ -72,8 +72,8 @@ var FlotillaScanner = function(){
 
                 clearTimeout(timeout);
 
-                message = message.replace('# Host:','').split(',');
-                details.dock_version = message[0];
+                message = message.replace('# Dock: ','').split(',');
+                details.dock_version = parseFloat(message[0]);
                 details.dock_serial = message[1];
                 details.dock_user = message[2];
                 details.dock_name = message[3];
