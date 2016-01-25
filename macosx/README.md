@@ -13,11 +13,11 @@ Flotilla Daemon requires the following libraries.
 
 libserialport
 libboost_system1.50
-libboost_date_time1.50*
+libboost_date_time1.50
 libboost_filesystem1.50
 libboost_program_options1.50
 
-Note that this pre-release is only tested on Mac OS X 10.11 and you may have to rebuild those libraries from source to get things working on another version of Mac OS
+Note that this pre-release has been tested on OSX 10.9 (Maverick) through to 10.11 (El Capitan). It should work on earlier version of Mac OS X such as 10.7 (Lion) and 10.8 (Mountain Lion) however, but currently untested - support for any earlier version of Mac OS is not on the card currently, sorry!
 
 #Flotilla Firmware
 
