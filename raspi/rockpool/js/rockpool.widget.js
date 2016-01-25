@@ -154,8 +154,12 @@ rockpool.widget =  function( type, rule, key ) {
     }
 
     this.setLabel = function( label ){
+        if( (this.isConverter() && this.handler.name == 'Empty') || (this.isOutput() && this.handler.name == 'None') ){
+            this.dom.find('.name').hide();
+            return;
+        }
         var channel = typeof(this.handler.channel) !== 'undefined' ? ' <span>' + rockpool.channelToNumber(this.handler.channel) + '</span>' : '';
-        this.dom.find('.name').html( rockpool.languify(label) + channel )
+        this.dom.find('.name').show().html( rockpool.languify(label) + channel )
     }
 
     this.setSubType = function( subtype ){

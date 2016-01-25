@@ -39,7 +39,7 @@ rockpool.inputs = {
         this.name = "Value"
         this.icon = "half"
         this.bgColor = rockpool.palette.blue
-        this.category = rockpool.category.generators
+        this.category = 'Value'
 
         this.options = [
                 {name:'Off',   value: 0.0, icon: "off" },
@@ -64,7 +64,7 @@ rockpool.inputs = {
         this.sindex = 0
         this.icon = "random"
         this.bgColor = rockpool.palette.blue
-        this.category = rockpool.category.generators
+        this.category = 'Pattern'
 
         this.options = [
                 {category: 'Waveforms', name:'Sine',     sequence: function(){ return (Math.sin(rockpool.time/10) + 1.0) / 2.0 }, icon: "sine"},
@@ -95,31 +95,46 @@ rockpool.inputs = {
 }
 
 if(window.DeviceMotionEvent) {
-    rockpool.tilt = {x:0,y:0,z:0};
+    rockpool.tilt = {x:0.5,y:0.5,z:0.5};
 
-    rockpool.inputs.tilt = function() {
-        this.name = "Tilt"
-        this.icon = "sine"
-        this.bgColor = rockpool.palette.blue
-        this.category = rockpool.category.generators
+    window.addEventListener('devicemotion', function(event) {
 
-        this.options = [
-            {category: 'Tilt', name: 'X', icon: "sine"},
-            {category: 'Tilt', name: 'Y', icon: "sine"},
-            {category: 'Tilt', name: 'Z', icon: "sine"},
-        ]
+        var x = event.accelerationIncludingGravity.x;
+        var y = event.accelerationIncludingGravity.y;
+        var z = event.accelerationIncludingGravity.z;
 
-        this.get = function(options){
-            switch(options.name){
-                case 'X':
-                    return rockpool.tilt.x;
-                case 'Y':
-                    return rockpool.tilt.y;
-                case 'Z':
-                    return rockpool.tilt.z;
+        if(!rockpool.inputs.tilt && x + y + z != 0){
+            rockpool.inputs.tilt = function() {
+                this.name = "Tilt"
+                this.icon = "motion"
+                this.bgColor = rockpool.palette.blue
+                this.category = 'Orientation'
+
+                this.options = [
+                    {category: 'Tilt', name: 'X', icon: "motion"},
+                    {category: 'Tilt', name: 'Y', icon: "motion"},
+                    {category: 'Tilt', name: 'Z', icon: "motion"},
+                ]
+
+                this.get = function(options){
+                    switch(options.name){
+                        case 'X':
+                            return rockpool.tilt.x;
+                        case 'Y':
+                            return rockpool.tilt.y;
+                        case 'Z':
+                            return rockpool.tilt.z;
+                    }
+                }
             }
         }
-    }
+
+        rockpool.tilt = {
+            x: (Math.max(-1.0,Math.min(1.0,x / 9.5)) + 1.0) / 2,
+            y: (Math.max(-1.0,Math.min(1.0,y / 9.5)) + 1.0) / 2,
+            z: (Math.max(-1.0,Math.min(1.0,z / 9.5)) + 1.0) / 2
+        }
+    });
 }
 
 rockpool.enable_keyboard = function(){
@@ -142,7 +157,7 @@ rockpool.enable_keyboard = function(){
             this.keys = []
             this.icon = "keyboard"
             this.bgColor = rockpool.palette.blue
-            this.category = rockpool.category.generators
+            this.category = 'Keys'
 
             this.options = [
                     {category: 'Keyboard Key', name:"UP/W",     keys:[87, 38], icon: "keyboard-up"},
