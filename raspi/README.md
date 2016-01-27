@@ -6,7 +6,7 @@ This pre-release preview of Flotilla contains the following:
 * Flotilla Daemon
 * Flotilla Dock Firmware
 
-Don't use these files if you're not a competent Pi user, and if you haven't already installed flotilla-offline.
+Don't use these files if you're not a competent Pi user.
 
 #Requirements
 
@@ -39,3 +39,13 @@ The new Daemon and Flotilla Dock Firmware speak 115200baud serial instead of 960
 
 To update your Dock, run ./update in the dock-firmware folder and follow the instructions.
 
+#Launching Flotilla/Rockpool
+
+Once your dock firmware is up-to-date, and you have ensured all dependencies have been met (see above), cd to this directory and:
+
+
+```
+./launch_flotilla
+```
+
+... this will stop any old flotilla daemon running on your machine and kick in the new version. It will then launch the brand spanking new Rockpool web interface for you to toy around with. Enjoy!

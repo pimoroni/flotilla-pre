@@ -10,20 +10,19 @@ It includes the Flotilla Firmware, Flotilla Daemon and the Rockpool front-end, p
 
 # What to expect in this release:
 
-* Faster
-* Unstable!
-* Highly experimental and unsupported Windows and Mac versions
+* Faster but potentially unstable Raspberry Pi Flotilla/Rockpool overhaul!
+* pre-compiled Linux versions based on above
+* Work in progress Mac version 
+* Highly experimental Windows versions
 
 # It doesn't work!
 
 This is an experimental, cutting-edge release. Things can and will break.
-
 Let us know when they do via our forums: http://forums.pimoroni.com/c/flotilla
 
 # Bug Reports & Contributions
 
 If you're GitHub fluent you can also submit an issue, but please don't submit pull-requests here.
-
 If you have ninja JS, HTML, CSS or C++ skills you can send fixes to:
 
 ### Rockpool
