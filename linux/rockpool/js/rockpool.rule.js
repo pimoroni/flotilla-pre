@@ -138,7 +138,7 @@ rockpool.rule = function (parent, widget_index) {
 
         this.getInput().setHandler(key);
 
-        if( typeof( option ) === "number" ){
+        if( typeof( option ) === "number" && this.getInput().hasOptions() ){
             this.getInput().setOptions(option);
         }
         else
@@ -168,7 +168,7 @@ rockpool.rule = function (parent, widget_index) {
         output.setHandler(key);
 
         //output.handler = handler
-        if( typeof(option) === "number" ){
+        if( typeof(option) === "number" && output.hasOptions() ){
             output.setOptions(option);
         }
         else
@@ -235,7 +235,7 @@ rockpool.rule = function (parent, widget_index) {
 
             this.dom.data('obj',this);
 
-            this.dom_enabled = $('<div class="pure-u-1-12 center block toggle"></div>').appendTo(this.dom);
+            this.dom_enabled = $('<div class="toggle"></div>').appendTo(this.dom);
 
             this.input = this.input ? this.input : new rockpool.widget( 'input', this, 'state' );
 
@@ -246,9 +246,9 @@ rockpool.rule = function (parent, widget_index) {
             this.output = this.output ? this.output : new rockpool.widget( 'output', this, 'none' )
 
             if( !this.isChild() ){
-                this.dom_delete =  $('<div class="pure-u-1-12 center block delete"></div>').appendTo(this.dom)
-                $('<i class="sprite sprite-channel-on"></i>').appendTo(this.dom_enabled);
-                $('<i class="sprite sprite-channel-delete"></i>').appendTo(this.dom_delete);
+                this.dom_delete =  $('<div class="delete"></div>').appendTo(this.dom)
+                $('<i></i>').appendTo(this.dom_enabled);
+                $('<i></i>').appendTo(this.dom_delete);
             }
 
             if( this.isChild() ){

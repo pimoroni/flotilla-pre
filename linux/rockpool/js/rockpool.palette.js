@@ -1,8 +1,6 @@
 var rockpool = rockpool || {};
 
 rockpool.prompt = function(content, close_on_click){
-    rockpool.closeModal();
-
     if( close_on_click = null || typeof( close_on_click ) === 'undefined' ){
         close_on_click = true;
     }
@@ -13,19 +11,15 @@ rockpool.prompt = function(content, close_on_click){
         content     : content,
         width       : '100%',
         margin      : [10, 10, 10, 10],
-        beforeClose : function(){rockpool.closeModal()}
+        beforeClose : function(){}
         //helpers     : {overlay : {locked : false}}
     });
     $('.fancybox-overlay,.fancybox-wrap').on('click', function(){
 
         if( close_on_click ){
-            if(!rockpool.closeModal()){
-                $.fancybox.close()
-            }
+            $.fancybox.close();
         }
 
-    }).on('scroll',function () {
-        rockpool.positionModal();
     })
 }
 
@@ -33,235 +27,7 @@ rockpool.closePrompt = function(){
     $.fancybox.close();
 }
 
-rockpool.modal_activator = null
-rockpool.modal_element = null
-rockpool.modal = function(content){
-    rockpool.closeModal();
-    rockpool.modal_element = $('<div>').addClass('modal').append(content).append('<span class="arrow"></span>').hide();
-
-    var icons = content.find('li').length
-
-    rockpool.modal_element.data({
-        offset_left: 0,
-        offset_top: 0
-    });
-
-    if(icons > 0 && icons < 5){
-        rockpool.modal_element.css({
-            width:90*icons
-        })
-    }
-
-    if($('.fancybox-outer').filter(':visible').length){
-       rockpool.modal_element.appendTo('.fancybox-outer').fadeIn('fast');
-    }
-    else
-    {
-       rockpool.modal_element.appendTo('body').fadeIn('fast');
-    }
-
-    if ( rockpool.modal_element.parents().find('.fancybox-wrap').length ){
-        var wrap = rockpool.modal_element.parents().find('.fancybox-wrap');
-
-        rockpool.modal_element.data({
-            offset_left: -wrap.offset().left,
-            offset_top: -wrap.offset().top
-        });
-    }
-
-    rockpool.positionModal();
-}
-rockpool.positionModal = function(){
-    if(!rockpool.modal_element) return false;
-
-    var arrow_width = 50;
-
-    var overlay_top = $('.fancybox-lock .fancybox-overlay').scrollTop() ? $('.fancybox-lock .fancybox-overlay').scrollTop() : 0;
-
-    var activator_top = rockpool.modal_activator.offset().top + overlay_top;
-
-    var activator_left = rockpool.modal_activator.offset().left;
-
-    //var content = rockpool.modal_element.first('div');
-
-    //var icon_width = content.find('li').width();
-    var activator_height = rockpool.modal_activator.height();
-    var activator_width = rockpool.modal_activator.width();
-
-
-    var height = rockpool.modal_element.height() + parseInt(rockpool.modal_element.css('border-width').replace('px','')) * 2;
-    var width = rockpool.modal_element.width() + parseInt(rockpool.modal_element.css('border-width').replace('px','')) * 2;
-
-    var window_width = $(window).width();
-    var window_height = $(window).height();
-
-
-    var offset_left = rockpool.modal_element.data('offset_left');
-    var offset_top = rockpool.modal_element.data('offset_top');;
-    /*
-
-        Start by placing the dialogue box below
-
-    */
-
-    var pos_left = activator_left - (width/2) + (activator_width/2);
-    var pos_top  = activator_top  + (activator_height) + (arrow_width/2);
-
-    var arrow_left = (width/2) - (arrow_width/2);
-    var arrow_top  = -arrow_width;
-
-    var arrow_position = 'top';
-
-    var margin = 20;
-
-
-    // We will ALWAYS have room below to place this box, so never shift it to the sides
-    if( pos_top + height + margin <= window_height ){
-        // POSITION: BELOW
-
-        if( pos_left + width + margin > window_width ){
-
-            pos_left = window_width - width - margin;
-
-        }else if( pos_left - margin < 0 ){
-
-            pos_left = margin;
-        }
-
-        arrow_left = activator_left - pos_left + (activator_width/2) - (arrow_width/2);
-
-    }
-    // There's no room below, PANIC!!!! 
-    else{
-        
-        pos_top = activator_top - 10;
-
-        if( activator_left + activator_width + width + margin <= window_width ){
-            // POSITION: RIGHT 
-            pos_left = activator_left + activator_width + (arrow_width/2);
-            arrow_position = 'left';
-            arrow_left = -50;
-            arrow_top  = activator_top - pos_top + (activator_height/2) - (arrow_width/2);  
-
-        }else if( activator_left - margin - width > 0 ){
-            // POSITION: LEFT 
-            pos_left = activator_left - margin - width;
-            arrow_position = 'right';
-            arrow_left = width;
-            arrow_top  = activator_top - pos_top + (activator_height/2) - (arrow_width/2);  
-
-        }else{
-            // AMAGAD IT WONT FIT ANYWHERE, WE'RE DOOMED!!!! 
-            arrow_position = 'hidden'
-        }
-
-        if( rockpool.modal_activator.offset().top - 10 + height + margin > window_height ){
-            pos_top = window_height - height - margin + overlay_top;
-            arrow_top = activator_top- pos_top + (activator_height/2) - (arrow_width/2);  
-        }
-
-    }
-
-
-    rockpool.modal_element.css({
-        left: (offset_left + pos_left) + 'px',
-        top: (offset_top + pos_top) + 'px'
-    }).find('.arrow').css({
-        left: arrow_left,
-        top: arrow_top
-    })
-    .removeClass('left')
-    .removeClass('right')
-    .removeClass('top')
-    .addClass(arrow_position);
-
-    return true;
-
-
-}
-rockpool.isModalOpen = function(){
-    if(rockpool.modal_element){
-        return true;
-    }
-    return false;
-}
-rockpool.closeModal = function(){
-    if(!rockpool.modal_element) return false;
-    rockpool.modal_element.fadeOut('fast',function(){$(this).remove();})
-    rockpool.modal_element = null;
-    return true;
-}
-
-rockpool.configureWidget = function(key, rule, type){
-
-    var categories = {}
-    var palette = $('<div class="palette">') //<header><h1>' + handler.name + '</h1></header></div>')
-    var handler;
-
-    switch(type){
-        case 'input':
-            handler = (typeof(rockpool.inputs[key]) === 'function') ? new rockpool.inputs[key] : rockpool.inputs[key];
-            break;
-        case 'output':
-            handler = (typeof(rockpool.outputs[key]) === 'function') ? new rockpool.outputs[key] : rockpool.outputs[key];
-            break;
-    }
-
-    if(handler.category){
-        palette.addClass(handler.category.toLowerCase())
-    }
-    
-    for(var idx in handler.options){
-        var opt = handler.options[idx]
-        if( !categories[opt.category] ) categories[opt.category] = $('<div><h2>' + rockpool.languify(opt.category) + '</h2><ul></ul></div>').appendTo(palette)
-        var d = $('<li><span class="icon"><img src=""></span><span class="label">' + rockpool.languify(opt.name) + '</span></li>').data('seq', idx)
-
-        var bgColor = opt.bgColor ? opt.bgColor : handler.bgColor;
-        var icon = opt.icon ? opt.icon : handler.icon;
-
-        if(opt.type){d.addClass(item.type)}
-        if(bgColor){d.find('.icon').css({color:bgColor}) }
-        if(icon){d.find('img').attr('src',icon)}else{d.find('img').remove()}
-
-        d.appendTo(categories[opt.category].find('ul'))
-    }
-
-    rockpool.modal(palette)
-
-    palette.on('click','li',function(){
-        var option = parseInt($(this).data('seq'))
-        rockpool.closeModal()
-        $.fancybox.close()
-
-        rule = rule instanceof rockpool.rule ? rule : new rockpool.rule()
-        rule.start();
-
-        switch(type){
-            case 'input':
-                rule.setInputHandler(key, option);
-                break;
-            case 'output':
-                rule.setOutputHandler(key, option);
-                break;
-            case 'converter':
-
-                break;
-        }
-    })
-}
-
 rockpool.generatePalette = function(type){
-
-    var list = $('.palette.' + type);
-
-    if( list.length == 0 ){
-        var title = (type == 'input') ? 'Inputs' : ((type == 'output') ? 'Outputs' : 'Converters')
-        list = $('<div><header><h1>' + rockpool.languify(title) + '</h1></header>').addClass('palette').addClass(type).appendTo('.palettes')
-    }
-
-    list.find('div').remove()
-
-    var categories = {}
 
     switch(type){
         case 'input':
@@ -273,35 +39,163 @@ rockpool.generatePalette = function(type){
         case 'converter':
             var collection = rockpool.converters;
             break;
+        default:
+            return;
     }
 
-    for(var k in collection){
-        var item = (typeof(collection[k]) === 'function') ? new collection[k] : collection[k]
-        var d = $('<li data-key="' + k + '"><span class="icon"><img src=""></span><span class="label">' + rockpool.languify(item.name) + '</span></li>')
-
-        var channel = (item.channel != null) ? item.channel : -1;
-
-        var active = (item.type == "module") ? item.active : true;
 
 
-        if(!active) continue
+    var dom_list = $('.palette.' + type);
 
-        if(item.options){d.addClass('hasOptions')}
-        if(item.type){d.addClass(item.type)}
-        if(item.bgColor){d.find('.icon').css({color:item.bgColor}) }
-        if(item.icon){d.find('img').attr('src',item.icon)}else{d.find('img').remove()}
+    if( dom_list.length == 0 ){
+        var title = (type == 'input') ? 'Inputs' : ((type == 'output') ? 'Outputs' : 'Converters')
+        dom_list = $('<div>').addClass('palette').addClass(type).appendTo('.palettes');
+        $('<i>').addClass('close').appendTo(dom_list);
+    }
 
-            var category = item.category ? item.category : 'General'
+    dom_list.find('div').remove();
 
-        if(!categories[channel]){ categories[channel] = {} }
 
-        if(!categories[channel][category]){
-            var channel_label = channel > -1 ? '<span>' + rockpool.channelToNumber(item.channel) + '</span>' : ''
-            categories[channel][category] = $('<div><h2>' + channel_label + rockpool.languify(category) + '</h2><ul></ul></div>').addClass(item.type).addClass(category.toLowerCase()).appendTo(list)
+    if( type == 'converter' ){
+
+        var dom_section = $("<div><header><h1>" + rockpool.languify("Choose a converter") + "</h1></header>").appendTo(dom_list);
+
+        /*
+            Converters are assigned logical, named groups depending on what they do
+        */
+        var categories = {};
+
+        for(var k in collection){
+            var handler = (typeof(collection[k]) === 'function') ? new collection[k] : collection[k];
+
+            var color = handler.color ? 'color-' + handler.color : 'color-grey';
+
+            var category = handler.category ? handler.category : 'General';
+
+            var dom_parent = categories[category] ? categories[category] : categories[category] = $('<div class="pure-g"><div class="pure-u-1-5"><h2>' + rockpool.languify(category) + '</h2></div><div class="pure-u-4-5"><ul></ul></div></div>').appendTo(dom_section);
+
+
+            var icon = handler.icon ? 'css/images/icons/icon-' + handler.icon + '.png' : 'css/images/icons/icon-default.png';
+
+            var dom_option = $('<li><i><img src=""><span class="name">' + rockpool.languify(handler.name) + '</span></i></li>')
+                                    .addClass('option')
+                                    .addClass(color)
+                                    .data({
+                                        'key': k
+                                    })
+                                    .appendTo(dom_parent.find('ul'))
+                                    .find('img').attr('src',icon);
+
         }
 
-        d.appendTo(categories[channel][category].find('ul'))
     }
+    else
+    {
+        /*
+            Inputs and outputs are grouped by parent module or type ( variable, value, generator etc )
+        */
+        var types = {};
+        types["real"] = $("<div><header><h1>" + rockpool.languify("Choose an " + type) + "</h1></header>");
+        types["virtual"] = $("<div><header><h1>" + rockpool.languify("Choose a virtual " + type) + "</h1></header>");
+
+        var counts = {"real":0, "virtual":0};
+
+        var categories = {};
+
+        for(var k in collection){
+            var handler = (typeof(collection[k]) === 'function') ? new collection[k] : collection[k]
+
+            var active = (handler.type == "module") ? handler.active : true;
+
+            if(!active) continue
+
+            var type = (handler.type == "module") ? "real" : "virtual";
+
+            var icon = handler.icon ? handler.icon : 'default';
+
+            var channel = (handler.channel != null) ? handler.channel : -1;
+
+            var color = handler.color ? 'color-' + handler.color : 'color-grey';
+
+            var category = handler.category ? handler.category : handler.name;
+
+            var dom_parent =  null;
+            if( type == "real" ){
+                dom_parent = types[type].find('.category-' + category.toLowerCase());
+            }
+
+            if(!dom_parent || dom_parent.length == 0){
+                dom_parent = $('<div class="pure-g category-' + category.toLowerCase() + '"><div class="pure-u-1-5"><ul><li class="' + color + '"><i><img src=""><span class="name">' + rockpool.languify(category) + '</span></i></li></ul></div><div class="pure-u-4-5"><ul></ul></div></div>')
+                    .appendTo(types[type]);
+
+                dom_parent.find('img')
+                    .attr('src','css/images/icons/icon-' + icon + '.png');
+
+                dom_parent.find('i').addClass('icon-' + icon);
+            }
+
+            counts[type]++;
+
+            var channel_text = '';
+            if( type == "real" ){
+               channel_text = ' <span>' + rockpool.channelToNumber(channel) + '</span>';
+            }
+
+            if(handler.options){
+
+                for(var idx in handler.options){
+                    var opt = handler.options[idx]
+
+                    var opt_color = opt.color ? 'color-' + opt.color : color;
+
+                    var dom_option = $('<li><i><img src=""><div class="name">' + rockpool.languify(opt.name) + channel_text + '</div></i></li>')
+                                    .addClass('option')
+                                    .addClass(opt_color)
+                                    .data({
+                                        'seq': idx,
+                                        'key': k
+                                    })
+                                    .appendTo(dom_parent.find('ul:eq(1)'));
+
+                    var icon = opt.icon ? opt.icon : (handler.icon ? handler.icon : 'default');
+
+                    if(opt.type){dom_option.addClass(item.type)}
+                    if(icon){dom_option.find('i').addClass('icon-' + icon);}
+                    if(icon){dom_option.find('img').attr('src','css/images/icons/icon-' + icon + '.png')}
+                }
+
+            }
+            else
+            {
+                    var dom_option = $('<li><i><img src=""><div class="name">' + rockpool.languify(handler.name) + channel_text + '</span></div></i></li>')
+                                    .addClass('option')
+                                    .addClass(color)
+                                    .data({
+                                        'key': k
+                                    })
+                                    .appendTo(dom_parent.find('ul:eq(1)'));
+
+                    var icon = handler.icon ? handler.icon : 'default';
+
+                    if(icon){dom_option.find('img').attr('src','css/images/icons/icon-' + icon + '.png')}
+                    if(icon){dom_option.find('i').addClass('icon-' + icon);}
+            }
+
+
+        } 
+
+        if( counts['real'] > 0 ) {
+            types['real'].appendTo(dom_list);
+        }
+        else
+        {
+            $('<div><header><h1>' + rockpool.languify("Plug something in!") + '</h1></header><p class="help">Plug in a module to start creating with Rockpool!</p>').appendTo(dom_list);
+        }
+
+        if( counts['virtual'] > 0 ) types['virtual'].appendTo(dom_list);
+    }
+
+
 
 }
 
@@ -310,26 +204,26 @@ rockpool.add = function(type, rule, index){
         case 'tool':
             var categories = {}
 
-            var list = $('<div><h1>Tools</h1>').addClass('palette')
+            var dom_list = $('<div><h1>Tools</h1>').addClass('palette')
 
             for( var k in rockpool.tools ){
                 var tool = new rockpool.tools[k]
-                var d = $('<li data-key="' + k + '"><span class="icon"><img src=""></span><span class="label">' + k + '</span></li>')
+                var d = $('<li data-key="' + k + '"><i><img src=""><span class="name">' + k + '</span></i></li>')
                 if(tool.bgColor){d.find('.icon').css({color:tool.bgColor}) }
 
                 if(!categories[tool.category]){
 
                     var channel_title = tool.category? '<h2>' + rockpool.languify(tool.category) + '</h2>' : ''
-                    categories[tool.category] = $('<div>' + channel_title + '<ul></ul></div>').appendTo(list)
+                    categories[tool.category] = $('<div>' + channel_title + '<ul></ul></div>').appendTo(dom_list)
 
                 }
 
                 categories[tool.category].find('ul').append(d)
             }
 
-            rockpool.prompt(list)
+            rockpool.prompt(dom_list)
 
-            list.on('click','li',function(){
+            dom_list.on('click','li',function(){
                 $.fancybox.close()
                 $(this).parent().remove()
                 rockpool.tool($(this).data('key'))
@@ -340,119 +234,61 @@ rockpool.add = function(type, rule, index){
         case 'output':
         case 'converter':
 
-            var list = $('.palettes .palette.' + type).off('click');
+            var dom_list = $('.palettes .palette.' + type).off('click');
 
-            rockpool.prompt(list)
+            rockpool.prompt(dom_list)
 
-            list.on('click','ul',function(e){
-                e.preventDefault()
+            dom_list.on('click','ul',function(e){
+                e.preventDefault();
                 e.stopPropagation();
             })
 
-            if( type == 'input' ){
-                list.on('click','li',function(){
+            switch(type){
+                case 'input':
+                        dom_list.on('click','li.option',function(){
 
-                    rockpool.modal_parent = list;
-                    rockpool.modal_activator = $(this);
+                            var k = $(this).data('key');
+                            var o = parseInt($(this).data('seq'));
 
-                    var k = $(this).data('key')
+                            rule = rule instanceof rockpool.rule ? rule : new rockpool.rule()
+                            rule.start();
+                            rule.setInputHandler(k, o)
+                            $.fancybox.close()
+                        })
+                    break;
+                case 'output':
+                        dom_list.on('click','li.option',function(){
 
-                    var handler = (typeof(rockpool.inputs[k]) === 'function') ? new rockpool.inputs[k] : rockpool.inputs[k];
+                            var k = $(this).data('key');
+                            var o = parseInt($(this).data('seq'));
 
-                    if(handler.options){
-                        rockpool.configureWidget(k,rule,type)
-                    }
-                    else{
+                            console.log('Setting output', k, o);
+
+                            rule = rule instanceof rockpool.rule ? rule : new rockpool.rule()
+                            rule.start();
+                            rule.setOutputHandler(k, o);
+                            $.fancybox.close()
+                        })
+                    break;
+                default:
+                    dom_list.on('click','li.option',function(){
+                        var k = $(this).data('key')
+                        $.fancybox.close()
+
                         rule = rule instanceof rockpool.rule ? rule : new rockpool.rule()
                         rule.start();
-                        rule.setInputHandler(k)
-                        $.fancybox.close()
-                    }
-                })
-            }else if (type == 'output'){
-                list.on('click','li',function(){
+                        var widget_index = typeof(index) === 'number' ? index - 2 : Math.floor(rule.converter_count/2);
 
-                    rockpool.modal_parent = list;
-                    rockpool.modal_activator = $(this);
-
-                    var k = $(this).data('key')
-
-                    var handler = (typeof(rockpool.outputs[k]) === 'function') ? new rockpool.outputs[k] : rockpool.outputs[k];
-
-                    if(handler.options){
-                        rockpool.configureWidget(k,rule,type)
-                    }
-                    else{
-                        rule = rule instanceof rockpool.rule ? rule : new rockpool.rule()
-                        rule.start();
-                        rule.setOutputHandler(k)
-                        $.fancybox.close()
-                    }
-                })
-            }else{
-                list.on('click','li',function(){
-                    var k = $(this).data('key')
-                    $.fancybox.close()
-
-                    rule = rule instanceof rockpool.rule ? rule : new rockpool.rule()
-                    rule.start();
-                    var widget_index = typeof(index) === 'number' ? index - 2 : Math.floor(rule.converter_count/2);
-                    //(typeof(rockpool.converters[k]) === 'function') ? new rockpool.converters[k] : rockpool.converters[k]
-                    rule.setHandler(widget_index, k)
-                })
+                        rule.setHandler(widget_index, k)
+                    })
             }
+
         break;
     }
 }
 
 
 rockpool.updatePalettes = function() {
-
-    //var inputs = {}
-    var inputs = 0;
-
-    // Update inputs
-    for(var k in rockpool.inputs){
-        var input = (typeof(rockpool.inputs[k]) === 'function') ? new rockpool.inputs[k] : rockpool.inputs[k]
-
-        if ( input.type === 'module' && input.active ){
-            inputs++;
-        }
-    }
-
-    var outputs = 0;
-
-    // Update outputs
-    for(var k in rockpool.outputs){
-        var output = (typeof(rockpool.outputs[k]) === 'function') ? new rockpool.outputs[k] : rockpool.outputs[k]
-
-        if ( output.type === 'module' && output.active ){
-            outputs++;
-        }
-    }
-
-
-    var addInput = $('.add-input h2 .counts');
-    if( addInput.length == 0 ){
-        addInput = $('<div class="counts"></div>').appendTo('.add-input h2')
-    }
-    addInput.find('i').remove()
-    $('<i>')
-        .addClass(k.toLowerCase())
-        .text(inputs)
-        .appendTo(addInput)
-
-    var addOutput = $('.add-output h2 .counts');
-    if( addOutput.length == 0 ){
-        addOutput = $('<div class="counts"></div>').appendTo('.add-output h2')
-    }
-    addOutput.find('i').remove()
-        $('<i>')
-        .addClass(k.toLowerCase())
-        .text(outputs)
-        .appendTo(addOutput)
-
     rockpool.generatePalette('input')
     rockpool.generatePalette('output')
-
 }

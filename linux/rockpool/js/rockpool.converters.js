@@ -37,6 +37,7 @@ rockpool.converters = {
     noop: function () {
         this.name = "Empty"
         this.category = rockpool.category.empty
+        this.icon = "add"
         this.convert = function (value) { return value }        
     },
     /*
@@ -44,14 +45,50 @@ rockpool.converters = {
     */
     halve: function () {
         this.name = "Halve"
-        this.category = rockpool.category.converters
-        this.icon = "css/images/icons/icon-halve.png"
+        this.category = rockpool.category.maths
+        this.icon = "halve"
         this.convert = function (value) { return value / 2.0 }        
     },
-    sine: function(){
+    double: function () {
+        this.name = "Double"
+        this.category = rockpool.category.maths
+        this.icon = "double"
+        this.convert = function (value) {
+            if( value <= 0.5 ){
+                return value * 2.0
+            }else{
+                return 1.0
+            }
+        }
+    },
+    invert: function () {
+        this.name = "Invert"
+        this.category = rockpool.category.modify
+        this.icon = "invert"
+        this.convert = function (value) { return 1 - value }        
+    },
+    smooth: function () {
+        this.name = "Smooth"
+        this.category = rockpool.category.modify
+        this.icon = "smooth"
+        this.values = []
+        this.values.average = rockpool.helpers.avg;
+        this.convert = function (value){
+
+            this.values.push( value )
+
+            if( this.values.length > 10 ){
+                this.values.shift()
+            }
+
+            return this.values.average()
+
+        }
+    },
+    /*sine: function(){
         this.name = "Sine Wave"
-        this.category = rockpool.category.converters
-        this.icon = "css/images/icons/icon-sine.png"
+        this.category = rockpool.category.modify
+        this.icon = "sine"
 
         this.frequency = 0;
         this.phase = 0.0;
@@ -71,48 +108,11 @@ rockpool.converters = {
             return (Math.sin(time * this.frequency + this.phase) + 1.0) / 2.0;
 
         }   
-    },
-    double: function () {
-        this.name = "Double"
-        this.category = rockpool.category.converters
-        this.icon = "css/images/icons/icon-double.png"
-        this.convert = function (value) {
-            if( value <= 0.5 ){
-                return value * 2.0
-            }else{
-                return 1.0
-            }
-        }
-    },
-    invert: function () {
-        this.name = "Invert"
-        this.category = rockpool.category.converters
-        this.icon = "css/images/icons/icon-invert.png"
-        this.convert = function (value) { return 1 - value }        
-    },
-    smooth: function () {
-        this.name = "Smooth"
-        this.category = rockpool.category.converters
-        this.icon = "css/images/icons/icon-smooth.png"
-        this.values = []
-        this.values.average = rockpool.helpers.avg;
-        this.convert = function (value){
-
-            this.values.push( value )
-
-            if( this.values.length > 10 ){
-                this.values.shift()
-            }
-
-            return this.values.average()
-
-        }
-    },
+    },*/
     toggle: function () {
         this.name = "Toggle"
-        //this.bgColor = rockpool.palette.purple
-        this.category = rockpool.category.converters
-        this.icon = "css/images/icons/icon-toggle.png"
+        this.category = rockpool.category.modify
+        this.icon = "toggle"
 
         this.last_value = 0
         this.latch = false
@@ -134,16 +134,16 @@ rockpool.converters = {
     */
     lessThan: function () {
         this.name = "Less Than"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-lt.png"
+        this.category = rockpool.category.compare
+        this.icon = "lt"
         this.childValue = 0
         this.convert = function (value) { return ( value < this.childValue ) ? 1 : 0 }
         this.set     = function (value) { this.childValue = value }
     },
     greaterThan: function () {
         this.name = "Greater Than"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-gt.png"
+        this.category = rockpool.category.compare
+        this.icon = "gt"
         this.childValue = 0
         this.convert = function (value, idx) { return ( value > this.childValue ) ? 1 : 0 }
         this.set     = function (value, idx) { this.childValue = value }
@@ -153,8 +153,8 @@ rockpool.converters = {
     */
     min: function () {
         this.name = "Min"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-min.png"
+        this.category = rockpool.category.compare
+        this.icon = "min"
         this.childValue = 0
         this.convert = function (value) { return (this.childValue < value) ? this.childValue : value }
         this.set     = function (value) { this.childValue = value }
@@ -164,16 +164,16 @@ rockpool.converters = {
     */
     max: function () {
         this.name = "Max"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-max.png"
+        this.category = rockpool.category.compare
+        this.icon = "max"
         this.childValue = 0
         this.convert = function (value) { return (this.childValue > value) ? this.childValue : value }
         this.set     = function (value) { this.childValue = value }
     },
     mix: function () {
         this.name = "Mix"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-mix.png"
+        this.category = rockpool.category.modify
+        this.icon = "mix"
         this.childValue = 0
         this.convert = function (value, idx) { return (value + this.childValue)/2 }
         this.set     = function (value, idx) { this.childValue = value }
@@ -183,8 +183,8 @@ rockpool.converters = {
     */
     diff: function () {
         this.name = "Difference"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-diff.png"
+        this.category = rockpool.category.compare
+        this.icon = "diff"
         this.childValue = 0
         this.convert = function (value) { return (this.childValue < value) ? value - this.childValue : this.childValue - value }
         this.set     = function (value) { this.childValue = value }
@@ -197,8 +197,8 @@ rockpool.converters = {
 */
     latch: function() {
         this.name = "Latch"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-latch.png"
+        this.category = rockpool.category.modify
+        this.icon = "latch"
 
         this.latched_value  = 0
         this.input_value    = 0
@@ -223,10 +223,18 @@ rockpool.converters = {
     */
     add: function () {
         this.name = "Add"
-        this.category = rockpool.category.deciders
-        this.icon = "css/images/icons/icon-add.png"
+        this.category = rockpool.category.maths
+        this.icon = "add"
         this.childValue = 0
         this.convert = function (value) { return (this.childValue + value > 1) ? 1 : this.childValue + value}
+        this.set     = function (value) { this.childValue = value }
+    },
+    subtract: function () {
+        this.name = "Subtract"
+        this.category = rockpool.category.maths
+        this.icon = "add"
+        this.childValue = 0
+        this.convert = function (value) { return (value - this.childValue < 0) ? 0 : value - this.childValue}
         this.set     = function (value) { this.childValue = value }
     }
 }
