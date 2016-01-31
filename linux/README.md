@@ -6,7 +6,7 @@ This pre-release preview of Flotilla contains the following:
 * Flotilla Daemon
 * Flotilla Dock Firmware
 
-Don't use these files if you're not a competent Pi user.
+Don't use these files if you're not a competent linux user.
 
 #Requirements
 
@@ -24,14 +24,7 @@ You can install them using the provided script, like so:
 ./install_dependencies
 ```
 
-Note that this pre-release has been tested against both Raspbian Wheezy and Jessie, but with emphasis on the later. If you run into any problem, make sure to:
-
-```
-sudo apt-get update
-sudo apt-get upgrade
-```
-
-... to ensure your distribution is fully up-to-date.
+Note that this pre-release has been tested very summarily and only in Debian 8.3 - if it does not work on your system the most likely reason is that libserialport wasn't installed in an ad hoc directory for the daemon to pick up automatically.
 
 #Flotilla Firmware
 
