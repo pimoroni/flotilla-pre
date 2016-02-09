@@ -14,7 +14,7 @@ newline() {
 
 echo "Flotilla Firmware Updater"
 
-if [ ! -f "./flotilla-dock.hex" ]; then
+if [ ! -f "./stable/flotilla-dock.hex" ]; then
     warning "No flotilla-dock.hex found. Exiting!"
     exit 0
 fi
