@@ -5,7 +5,7 @@ This pre-release preview of Flotilla contains the following:
 * Rockpool + Flotilla Daemon self-contained in an app bundle
 * Flotilla Dock Firmware updater
 
-Don't use these files if you're not a competent user.
+Don't use these files if you're not an advanced Mac user.
 
 #Requirements
 
@@ -17,13 +17,13 @@ libboost_date_time1.50
 libboost_filesystem1.50
 libboost_program_options1.50
 
-Note that this pre-release has been tested on OSX 10.9 (Maverick) through to 10.11 (El Capitan). It should work on earlier version of Mac OS X such as 10.7 (Lion) and 10.8 (Mountain Lion) however, but currently untested - support for any earlier version of Mac OS is not on the card currently, sorry!
+Note that this pre-release has been tested on OSX 10.9 (Maverick) through to 10.11 (El Capitan). It may work on earlier version of Mac OS X such as 10.7 (Lion) and 10.8 (Mountain Lion) however, but currently untested - support for any earlier version of Mac OS is not on the card currently, sorry!
 
 #Flotilla Firmware
 
 The new Daemon and Flotilla Dock Firmware speak 115200baud serial instead of 9600, they both need updating together.
 
-To update your Dock, run ./update in the dock-firmware folder and follow the instructions.
+To update your Dock, run ./update in the dock-firmware folder and follow the instructions. If you feel brave you can also run the ./try script to upload the latest experimental firmware.
 
 #Launching Flotilla/Rockpool
 
