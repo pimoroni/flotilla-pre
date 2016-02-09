@@ -81,15 +81,22 @@ h2 {
     line-height:30px;
     text-align:center;
     font-size: 30px;
-    background:#FFF;
-    color:#000;
+    background:#2E6BE2;
+    color:#FFF;
     margin-left:10px;
+}
+.host-picker .host.update-needed {
+    background:#2F2F2F;
+    color:#DDD;
+}
+.host-picker .host .error {
+    color:#ED1558;   
 }
 
 .host-picker .host p {
     margin:0;
     padding:0;
-    padding-top:70px;
+    padding-top:60px;
 }
 .host-picker .host small {
     font-size:20px;
@@ -99,6 +106,24 @@ h2 {
 .host-picker .choices {
     padding:10px;
     overflow: hidden;
+}
+.host-picker .daemon {
+    display:inline-block;
+    float:left;
+    border-radius:10px;
+    background:rgba(0,0,0,0.5);
+    padding-right:10px;
+    padding-bottom:10px;
+    margin-left:10px;
+    margin-bottom:10px;
+}
+.host-picker .daemon > h3,
+.host-picker .daemon > p {
+    color:#FFF;
+    font-size:20px;
+    text-align:center;
+    display: block;
+    margin:10px;
 }
 
 .host-picker .custom {
@@ -192,6 +217,7 @@ h2 {
 
 .rulegroup {
     position:relative;
+    display:block;
 }
 
 .rule .toggle, .rule .delete {
