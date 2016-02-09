@@ -14,7 +14,7 @@ newline () {
 
 echo "Flotilla Firmware Updater"
 
-if [ ! -f "./stable/flotilla-dock.hex" ]; then
+if [ ! -f "./release/flotilla-dock.hex" ]; then
     warning "No flotilla-dock.hex found. Exiting!"
     exit 0
 fi
@@ -22,20 +22,21 @@ fi
 newline
 warning "This update will reset your Dock's serial baud rate to 9600"
 newline
-
 read -rsp $'Press any key to continue...\n' -n1 key
-
 newline
 warning "Please unplug your Flotilla Dock if it is plugged in!"
-
 newline
+
 sudo sleep 2
+
 success "Plug in your Flotilla Dock now then"
 read -rsp $'Press any key to continue...\n' -n1 key
 newline
 
 sudo ./dfu-programmer atxmega32a4u erase
-sudo ./dfu-programmer atxmega32a4u flash ./stable/flotilla-dock.hex
-sudo ./dfu-programmer atxmega32a4u launch
+sudo ./dfu-programmer atxmega32a4u flash ./release/flotilla-dock.hex
 
 success "Update finished, enjoy!"
+warning "Please unplug/replug your Flotilla Dock before use!"
+
+exit 0
