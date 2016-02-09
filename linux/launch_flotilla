@@ -7,7 +7,7 @@ fi
 
 echo -e "Launching Flotilla pre-release...\n"
 
-./flotillad/flotilla-armhf -d &
+./flotillad/flotilla-i386 -d &
 
 if [ "$DISPLAY" ]; then
     cd ./rockpool

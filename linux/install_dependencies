@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pkgdeplist=( "libboost-system1.50.0" "libboost-filesystem1.50.0" "libboost-program-options1.50.0" "libboost-date-time1.50.0")
+pkgdeplist=( "libboost-system1.55.0" "libboost-filesystem1.55.0" "libboost-program-options1.55.0" "libboost-date-time1.55.0" )
 
 apt_pkg_req () {
     APT_CHK=$(dpkg-query -W --showformat='${Status}\n' $1|grep "install ok installed")
