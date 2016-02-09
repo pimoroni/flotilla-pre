@@ -48,7 +48,7 @@ done
 sleep 0.2
 
 sudo ./dfu-programmer atxmega32a4u erase
-sudo ./dfu-programmer atxmega32a4u flash ./releaseflotilla-dock.hex
+sudo ./dfu-programmer atxmega32a4u flash ./stable/flotilla-dock.hex
 
 success "Update finished, enjoy!"
 warning "Please unplug/replug your Flotilla Dock before use!"
