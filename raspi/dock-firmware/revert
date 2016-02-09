@@ -1,20 +1,20 @@
 #!/bin/bash
 
-success () {
+success() {
     echo "$(tput setaf 2)$1$(tput sgr0)"
 }
 
-warning () {
+warning() {
     echo "$(tput setaf 1)$1$(tput sgr0)"
 }
 
-newline () {
+newline() {
     echo ""
 }
 
 echo "Flotilla Firmware Updater"
 
-if [ ! -f "./stable/flotilla-dock.hex" ]; then
+if [ ! -f "./release/flotilla-dock.hex" ]; then
     warning "No flotilla-dock.hex found. Exiting!"
     exit 0
 fi
@@ -25,17 +25,14 @@ warning "for compatibility with the current version of flotil.la/cookbook"
 warning "You will also need to reinstall flotillad using:"
 warning "curl -sS get.pimoroni.com/rockpool | bash"
 newline
-
 read -rsp $'Press any key to continue...\n' -n1 key
-
 newline
 
 RESULT=$(lsusb -d 16d0:08c3)
 
 if [ ! -z "$RESULT" ]; then
     warning "Please unplug your Flotilla Dock!"
-    while [ ! -z "$RESULT" ];
-    do
+    while [ ! -z "$RESULT" ]; do
         RESULT=$(lsusb -d 16d0:08c3)
         sleep 0.01
     done
@@ -43,18 +40,18 @@ fi
 
 success "Plug in your Flotilla Dock now."
 success "Updating should continue automatically."
-
 newline
 
-while ! lsusb -d 03eb:2fe4;
-do
+while ! lsusb -d 03eb:2fe4; do
     sleep 0.01
 done
 
 sleep 0.2
 
 sudo ./dfu-programmer atxmega32a4u erase
-sudo ./dfu-programmer atxmega32a4u flash ./stable/flotilla-dock.hex
-sudo ./dfu-programmer atxmega32a4u launch
+sudo ./dfu-programmer atxmega32a4u flash ./release/flotilla-dock.hex
 
 success "Update finished, enjoy!"
+warning "Please unplug/replug your Flotilla Dock before use!"
+
+exit 0
