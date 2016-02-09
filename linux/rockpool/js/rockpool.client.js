@@ -3,6 +3,8 @@ rockpool.offline = true
 rockpool.use_web_workers = false;
 
 rockpool.port = "9395";
+rockpool.sockets = {}
+
 rockpool.connection_timeout = 500; // seems stable at (250 * number of ranges to scan)
 
 rockpool.valid_hosts = [];
@@ -15,10 +17,20 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
     .on('click','.host',function(e){
         e.preventDefault();
         e.stopPropagation();
+
+        if($(this).hasClass('update-needed')){
+            return false;
+        }
+
         rockpool.stopScan();
+
         var host = $(this).data('host');
+        var details = $(this).data('details');
+
+        console.log('Connecting to', host, details);
+
         rockpool.closePrompt();
-        rockpool.connect(host, rockpool.port);
+        rockpool.connect(host, rockpool.port, details);
     })
     .on('click','.custom a',function(e){
         e.preventDefault();
@@ -32,15 +44,52 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
     .append('<div class="progress"><strong>' + rockpool.languify('Scanning') + '</strong><span></span></div>')
     .append('<div class="choices"><div class="custom"><h3>Custom</h3><p>Don\'t see your dock? Enter the IP address of your Flotilla host.</p><input type="text" value="127.0.0.1"><a href="#">Connect<a></div></div>');
 
+rockpool.addDaemon = function(host, details){
+    console.log('Adding daemon', host, details);
+
+    if(rockpool.valid_hosts.indexOf(details.canonical_address) != -1) return;
+    rockpool.valid_hosts.push(details.canonical_address);
+
+    var daemon = rockpool.host_picker.find('.daemon').filter('[data-host="' + host + '"]');
+
+    if(daemon.length) return;
+
+    $('<div class="daemon"><h3>' + host + ' (v' + details.daemon_version + ')</h3><p>No docks connected!</p></div>')
+    .attr({
+        'data-host':host
+    })
+    .appendTo(rockpool.host_picker.find('.choices'));
+}
+
 rockpool.addHost = function(host, details){
     console.log('Adding valid host', host, details);
 
-    if(details.dock_version < rockpool.minimum_dock_version) return; // Add an alert about dock needing an update here
+        var daemon = rockpool.host_picker.find('.daemon').filter('[data-host="' + host + '"]');
+        daemon.find('> p').hide();
 
-    if( rockpool.valid_hosts.indexOf(details.dock_serial) == -1 ){
-        rockpool.valid_hosts.push(details.dock_serial);
-        $('<div><p>' + details.dock_name + '</p><small>' + host + '</small><small>' + details.dock_version + '</small></div>').data('host',host).addClass('host').appendTo(rockpool.host_picker.find('.choices'));
-    }
+        var h = daemon.find('.host').filter('[data-serial="' + details.dock_serial + '"]');
+
+        if(h.length) return;
+
+        //rockpool.valid_hosts.push(details.dock_serial);
+        h = $('<div><p>' + details.dock_name + '</p><small>' + details.dock_user + '</small></div>')
+            .data({
+                'host':host,
+                'details':details
+            })
+            .attr({
+                'data-serial':details.dock_serial
+            })
+            .addClass('host');
+
+        if(details.dock_version < rockpool.minimum_dock_version){
+            h.append('<small class="error">Update Needed!</small>');
+            h.addClass('update-needed');
+        }
+        h.append('<small>v' + details.dock_version + '</small>');
+
+        h.appendTo(daemon);
+    //}
 }
 
 rockpool.discoverHosts = function(){
@@ -131,7 +180,7 @@ rockpool.addScanTarget = function(target, timeout){
 rockpool.addPreviousTargets = function(){
     var history = rockpool.loadConnectionHistory();
     for(var host in history){
-        console.log('Adding previous host: ' + history[host])
+        if(rockpool.debug_enabled) console.log('Adding previous host: ' + history[host])
         rockpool.addScanTarget(history[host], 5000);
     }
 }
@@ -180,7 +229,7 @@ rockpool.findHosts = function(){
                 var start     = start_end[0];
                 var end       = start_end[1];
 
-                console.log('Terminating redundant range due to subnet ' + rockpool.attempt_list[x].target)
+                if(rockpool.debug_enabled) console.log('Terminating redundant range due to subnet ' + rockpool.attempt_list[x].target)
 
                 rockpool.scan_workers[rockpool.attempt_list[x].target].stop(rockpool.scan_workers[rockpool.attempt_list[x].target]);
             }
@@ -217,7 +266,7 @@ rockpool.findHosts = function(){
                 }
 
             }
-            console.log('Target',target);
+            if(rockpool.debug_enabled) console.log('Target',target);
             rockpool.scan_workers[target].postMessage({
                 attempt_host:target,
                 connection_timeout:attempt_host.timeout
@@ -225,7 +274,7 @@ rockpool.findHosts = function(){
         }
         else
         {
-            console.log('Target',target);
+            if(rockpool.debug_enabled) console.log('Target',target);
             rockpool.scan_workers[target] = new FlotillaScanner();
             rockpool.scan_workers[target].scan(
                 target,
@@ -234,7 +283,9 @@ rockpool.findHosts = function(){
                 function(host, details)    {
                     var successful_subnet = host.split('.').slice(0,3).join('.');
                     rockpool.addHost(host, details);
-                    //stopOtherScans(successful_subnet);
+                },
+                function(host, details) {
+                    rockpool.addDaemon(host, details);
                 }
             );
         }
@@ -304,8 +355,11 @@ rockpool.disconnect = function(){
 
 }
 
-rockpool.connect = function(host, port){
-    rockpool.disconnect();
+rockpool.connect = function(host, port, details){
+
+    rockpool.disconnect(host);
+
+    if(rockpool.debug_enabled) console.log('Connected', details);
 
     var prompt = $("<div>")
         .addClass('host-picker palette')
@@ -315,7 +369,12 @@ rockpool.connect = function(host, port){
 
     rockpool.socket = new WebSocket("ws://" + host + ':' + port + "/");
     rockpool.socket.onopen = function() { 
-        console.log('Successfully connected to ' + host); rockpool.socket.send('ready'); 
+        if(rockpool.debug_enabled) console.log('Successfully connected to ' + host);
+
+        rockpool.socket.send("subscribe: " + details.dock_index);
+        rockpool.socket.send('ready'); 
+
+        rockpool.subscribed_to = details.dock_index;
 
         rockpool.addToConnectionHistory(host);
 
@@ -327,7 +386,7 @@ rockpool.connect = function(host, port){
     };
     rockpool.socket.onmessage = function(event) { rockpool.parseCommand(event.data); return; };
     rockpool.socket.onerror = function(event) {
-        console.log('Socket Error',event);
+        if(rockpool.debug_enabled) console.log('Socket Error',event);
         rockpool.closePrompt();
         rockpool.findHosts();
      };
@@ -337,7 +396,7 @@ rockpool.connect = function(host, port){
 rockpool.sendHostUpdate = function(host, channel, code, data){
 
     var packet = ['s', channel, data.join(',')].join(' ');
-    packet = 'h:' + host + ' d:' + packet;
+    packet = 'dock:' + host + ' data:' + packet;
     if( rockpool.isConnected() ){
         if(rockpool.debug_enabled) console.log('Sending packet:', packet)
         rockpool.socket.send(packet);
@@ -360,35 +419,32 @@ rockpool.addressLookup = function(module_addr){
 
 rockpool.parseCommand = function(data_in){
 
-    if(data_in == 'update'){
-        //rockpool.update();
-        //rockpool.sync();
-        return;
-    }
-
     if(data_in[0] == '#'){
-        console.log('Debug: ', data_in);
+        if(rockpool.debug_enabled)console.log('Debug: ', data_in);
         return false;
     }
-    
-    packet = data_in.split(/[$h|\ d]\:/);
-    packet.shift();
+
+    packet = data_in.split(/dock\:|\ data\:/i);
+    packet.shift(); // Drop the leading empty item
 
     var host    = parseInt(packet[0].trim());
+
+    if(host != rockpool.subscribed_to) return;
+
     data_in = packet[1].trim();
 
     if(data_in[0] == '#'){
-        console.log('Debug: ', data_in);
+        if(rockpool.debug_enabled)console.log('Debug: ', data_in);
         return false;
     }
 
     if(data_in[0] == 'H'){
         if( data_in[1] == 'F' ){
-            console.log('Flotilla Host Found!');
+            if(rockpool.debug_enabled) console.log('Flotilla Host Found!');
         }
         else
         {
-            console.log('Flotilla Host Lost!');
+            if(rockpool.debug_enabled) console.log('Flotilla Host Lost!');
         }
         return true;
     }
