@@ -14,16 +14,15 @@ newline() {
 
 echo "Flotilla Firmware Updater"
 
-if [ ! -f "./release/flotilla-dock.hex" ]; then
+if [ ! -f "./flotilla-dock.hex" ]; then
     warning "No flotilla-dock.hex found. Exiting!"
     exit 0
 fi
 
 newline
-warning "This update will reset your Dock's serial baud rate to 9600"
-warning "for compatibility with the current version of flotil.la/cookbook"
-warning "You will also need to reinstall flotillad using:"
-warning "curl -sS get.pimoroni.com/rockpool | bash"
+warning "This update will break compatibility with older versions of flotillad"
+warning "and change your Dock's serial baud rate to 115200"
+warning "Press CTRL+C now if you're not sure, otherwise... enjoy!"
 newline
 read -rsp $'Press any key to continue...\n' -n1 key
 newline
@@ -49,7 +48,7 @@ done
 sleep 0.2
 
 sudo ./dfu-programmer atxmega32a4u erase
-sudo ./dfu-programmer atxmega32a4u flash ./release/flotilla-dock.hex
+sudo ./dfu-programmer atxmega32a4u flash ./flotilla-dock.hex
 
 success "Update finished, enjoy!"
 warning "Please unplug/replug your Flotilla Dock before use!"

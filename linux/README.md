@@ -30,7 +30,7 @@ Note that this pre-release has been tested very summarily and only in Debian 8.3
 
 The new Daemon and Flotilla Dock Firmware speak 115200baud serial instead of 9600, they both need updating together.
 
-To update your Dock, run ./update in the dock-firmware folder and follow the instructions.
+To update your Dock, run the update script in the firmware folder and follow the instructions.
 
 #Launching Flotilla/Rockpool
 

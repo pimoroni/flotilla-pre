@@ -1,20 +1,20 @@
 #!/bin/bash
 
-success () {
+success() {
     echo "$(tput setaf 2)$1$(tput sgr0)"
 }
 
-warning () {
+warning() {
     echo "$(tput setaf 1)$1$(tput sgr0)"
 }
 
-newline () {
+newline() {
     echo ""
 }
 
 echo "Flotilla Firmware Updater"
 
-if [ ! -f "./stable/flotilla-dock.hex" ]; then
+if [ ! -f "./flotilla-dock.hex" ]; then
     warning "No flotilla-dock.hex found. Exiting!"
     exit 0
 fi
@@ -26,17 +26,29 @@ warning "Press CTRL+C now if you're not sure, otherwise... enjoy!"
 newline
 read -rsp $'Press any key to continue...\n' -n1 key
 newline
-warning "Please unplug your Flotilla Dock if it is plugged in!"
-newline
 
-sudo sleep 2
+RESULT=$(lsusb -d 16d0:08c3)
+
+if [ ! -z "$RESULT" ]; then
+    warning "Please unplug your Flotilla Dock!"
+    while [ ! -z "$RESULT" ]; do
+        RESULT=$(lsusb -d 16d0:08c3)
+        sleep 0.01
+    done
+fi
 
 success "Plug in your Flotilla Dock now."
-read -rsp $'Press any key to continue...\n' -n1 key
+success "Updating should continue automatically."
 newline
 
+while ! lsusb -d 03eb:2fe4; do
+    sleep 0.01
+done
+
+sleep 0.2
+
 sudo ./dfu-programmer atxmega32a4u erase
-sudo ./dfu-programmer atxmega32a4u flash ./stable/flotilla-dock.hex
+sudo ./dfu-programmer atxmega32a4u flash ./flotilla-dock.hex
 
 success "Update finished, enjoy!"
 warning "Please unplug/replug your Flotilla Dock before use!"
