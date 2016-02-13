@@ -1,5 +1,15 @@
 #!/bin/bash
 
+if getent group dialout | grep $(whoami); then
+    echo "current user is part of dialout group"
+else
+    echo "adding current user to dialout group"
+    sudo adduser $(whoami) dialout
+    echo "you need to log out then log back in for changes"
+    echo "to take effect (then run this script again)"
+    exit 1
+fi
+
 if [ -f /etc/init.d/flotillad ]; then
     echo -e "Stopping Flotilla Deamon...\n"
     sudo service flotillad stop
