@@ -14,7 +14,7 @@ newline () {
 
 echo "Flotilla Firmware Updater"
 
-if [ ! -f "./flotilla-dock.hex" ]; then
+if [ ! -f "./firmware/flotilla-dock.hex" ]; then
     warning "No flotilla-dock.hex found. Exiting!"
     exit 0
 fi
@@ -35,8 +35,8 @@ success "Plug in your Flotilla Dock now."
 read -rsp $'Press any key to continue...\n' -n1 key
 newline
 
-sudo ./dfu-programmer atxmega32a4u erase
-sudo ./dfu-programmer atxmega32a4u flash ./flotilla-dock.hex
+sudo ./firmware/dfu-programmer atxmega32a4u erase
+sudo ./firmware/dfu-programmer atxmega32a4u flash ./firmware/flotilla-dock.hex
 
 success "Update finished, enjoy!"
 warning "Please unplug/replug your Flotilla Dock before use!"

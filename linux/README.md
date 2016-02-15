@@ -30,7 +30,7 @@ Note that this pre-release has been tested only on Ubuntu 14.04 LTS and on Debia
 
 The new Daemon and Flotilla Dock Firmware speak 115200baud serial instead of 9600, they both need updating together.
 
-To update your Dock, run the update script in the firmware folder and follow the instructions.
+To update your Dock, run the update_firmware script and follow the instructions.
 
 #Launching Flotilla/Rockpool
 

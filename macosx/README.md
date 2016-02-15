@@ -23,7 +23,7 @@ Note that this pre-release has been tested on OSX 10.9 (Maverick) through to 10.
 
 The new Daemon and Flotilla Dock Firmware speak 115200baud serial instead of 9600, they both need updating together.
 
-To update your Dock, run the update script in the firmware folder and follow the instructions.
+To update your Dock, run the update_firmware script in the firmware folder and follow the instructions.
 
 #Launching Flotilla/Rockpool
 
