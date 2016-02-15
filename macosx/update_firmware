@@ -18,7 +18,7 @@ if [ -f "./firmware/flotilla-dock.hex" ] || [ -L "./firmware/flotilla-dock.hex" 
     success "dock firmware file found"
 else
     warning "No flotilla-dock.hex found. Exiting!"
-    exit 0
+    exit
 fi
 
 newline
@@ -37,10 +37,13 @@ success "Plug in your Flotilla Dock now."
 read -rsp $'Press any key to continue...\n' -n1 key
 newline
 
-sudo ./firmware/dfu-programmer atxmega32a4u erase
-sudo ./firmware/dfu-programmer atxmega32a4u flash ./firmware/flotilla-dock.hex
-
-success "Update finished, enjoy!"
-warning "Please unplug/replug your Flotilla Dock before use!"
+if sudo ./firmware/dfu-programmer atxmega32a4u erase 2>&1 | grep -q "no device present";then
+    warning "No Flotilla Dock detected!"
+    exit
+else
+    sudo ./firmware/dfu-programmer atxmega32a4u flash ./firmware/flotilla-dock.hex
+    success "Dock Firmware Update completed, enjoy!"
+    warning "Please unplug/replug your Flotilla Dock before use!"
+fi
 
 exit 0
