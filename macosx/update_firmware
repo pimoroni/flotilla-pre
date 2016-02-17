@@ -1,0 +1,49 @@
+#!/bin/sh
+
+success () {
+    echo "$(tput setaf 2)$1$(tput sgr0)"
+}
+
+warning () {
+    echo "$(tput setaf 1)$1$(tput sgr0)"
+}
+
+newline () {
+    echo ""
+}
+
+echo "Flotilla Firmware Updater"
+
+if [ -f "./firmware/flotilla-dock.hex" ] || [ -L "./firmware/flotilla-dock.hex" ]; then
+    success "dock firmware file found"
+else
+    warning "No flotilla-dock.hex found. Exiting!"
+    exit
+fi
+
+newline
+warning "This update will break compatibility with older versions of flotillad"
+warning "and change your Dock's serial baud rate to 115200"
+warning "Press CTRL+C now if you're not sure, otherwise... enjoy!"
+newline
+read -rsp $'Press any key to continue...\n' -n1 key
+newline
+warning "Please unplug your Flotilla Dock if it is plugged in!"
+newline
+
+sudo sleep 2
+
+success "Plug in your Flotilla Dock now."
+read -rsp $'Press any key to continue...\n' -n1 key
+newline
+
+if sudo ./firmware/dfu-programmer atxmega32a4u erase 2>&1 | grep -q "no device present";then
+    warning "No Flotilla Dock detected!"
+    exit
+else
+    sudo ./firmware/dfu-programmer atxmega32a4u flash ./firmware/flotilla-dock.hex
+    success "Dock Firmware Update completed, enjoy!"
+    warning "Please unplug/replug your Flotilla Dock before use!"
+fi
+
+exit 0

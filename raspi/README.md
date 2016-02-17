@@ -37,7 +37,7 @@ sudo apt-get upgrade
 
 The new Daemon and Flotilla Dock Firmware speak 115200baud serial instead of 9600, they both need updating together.
 
-To update your Dock, run ./update in the dock-firmware folder and follow the instructions. If you feel brave you can also run the ./try script to upload the latest experimental firmware.
+To update your Dock, run the update_firmware script and follow the instructions.
 
 #Launching Flotilla/Rockpool
 

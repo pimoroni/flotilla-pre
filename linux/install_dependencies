@@ -37,20 +37,36 @@ for pkgdep in ${pkgdeplist[@]}
     fi
 done
 
-if [ -f /usr/local/lib/libserialport.so.0.0.0 ]; then
-    echo -e "libserialport already installed. Updating..."
+if [ -d /usr/lib/x86_64-linux-gnu ]; then
+    if [ -f /usr/lib/x86_64-linux-gnu/libserialport.so.0.0.0 ]; then
+        echo -e "libserialport already installed. Updating..."
+    fi
+    cp ./dependencies/libs-amd64/libserialport* /usr/lib/x86_64-linux-gnu/
+
+    if [ ! -f /usr/lib/x86_64-linux-gnu/libserialport.so.0 ]; then
+        ln -s /usr/lib/x86_64-linux-gnu/libserialport.so.0.0.0 /usr/lib/x86_64-linux-gnu/libserialport.so.0
+    fi
+
+    if [ ! -f /usr/lib/x86_64-linux-gnu/libserialport.so ]; then
+        ln -s /usr/lib/x86_64-linux-gnu/libserialport.so.0.0.0 /usr/lib/x86_64-linux-gnu/libserialport.so
+    fi
+    chown root:staff /usr/lib/x86_64-linux-gnu/libserialport*
+else
+    if [ -f /usr/local/lib/libserialport.so.0.0.0 ]; then
+        echo -e "libserialport already installed. Updating..."
+    fi
+    cp ./dependencies/libs-i386/libserialport* /usr/local/lib/
+
+    if [ ! -f /usr/local/lib/libserialport.so.0 ]; then
+        ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so.0
+    fi
+
+    if [ ! -f /usr/local/lib/libserialport.so ]; then
+        ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so
+    fi
+    chown root:staff /usr/local/lib/libserialport*
 fi
 
-cp ./dependencies/libs/libserialport* /usr/local/lib/
-
-if [ ! -f /usr/local/lib/libserialport.so.0 ]; then
-    ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so.0
-fi
-
-if [ ! -f /usr/local/lib/libserialport.so ]; then
-    ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so
-fi
-chown root:staff /usr/local/lib/libserialport*
 ldconfig
 
 echo -e "All done!\n"

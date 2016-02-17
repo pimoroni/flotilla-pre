@@ -25,7 +25,7 @@ Note that this pre-release has only been somewhat comprehensively tested on Wind
 
 The new Daemon and Flotilla Dock Firmware speak 115200baud serial instead of 9600, they both need updating together.
 
-To update your Dock, you will need the dock firmware and some specialist tools such as dfu-programmer.
+To update your Dock, you will need the dock firmware and some specialist tools such as dfu-programmer. See the README in the firmware folder for instructions.
 
 #Launching Flotilla/Rockpool
 
