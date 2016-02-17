@@ -17,7 +17,7 @@ fi
 
 echo -e "Launching Flotilla pre-release...\n"
 
-if [-d /usr/lib/x86_64-linux-gnu ]; then
+if [ -d /usr/lib/x86_64-linux-gnu ]; then
     exec ./flotillad/flotilla-amd64 -d &
 else
     exec ./flotillad/flotilla-i386 -d &
