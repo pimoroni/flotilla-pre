@@ -49,8 +49,13 @@ done
 
 sleep 0.2
 
-sudo ./firmware/dfu-programmer atxmega32a4u erase
-sudo ./firmware/dfu-programmer atxmega32a4u flash ./firmware/flotilla-dock.hex
+if [ -d /usr/lib/x86_64-linux-gnu ]; then
+    sudo ./firmware/dfu-programmer-amd64 atxmega32a4u erase
+    sudo ./firmware/dfu-programmer-amd64 atxmega32a4u flash ./firmware/flotilla-dock.hex
+else
+    sudo ./firmware/dfu-programmer-i386 atxmega32a4u erase
+    sudo ./firmware/dfu-programmer-i386 atxmega32a4u flash ./firmware/flotilla-dock.hex
+fi
 
 success "Update finished, enjoy!"
 warning "Please unplug/replug your Flotilla Dock before use!"
