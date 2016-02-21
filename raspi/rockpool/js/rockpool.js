@@ -1,6 +1,6 @@
 var rockpool = rockpool || {};
 
-rockpool.active_modules = [];
+rockpool.active_modules = {};
 rockpool.rules = [];
 rockpool.guid = 0;
 rockpool.last_time = 0;
@@ -113,11 +113,14 @@ rockpool.clear = function(){
     })
 }
 
-rockpool.updateActiveWidgets = function () {
-    rockpool.forRules(function(r){r.updateLabels()})
+rockpool.updateActiveWidgets = function (module_key) {
+    rockpool.forRules(function(r){r.updateLabels(module_key)})
 }
 
 rockpool.run = function () {
+    if(rockpool.running) return;
+    rockpool.running = true;
+    
     rockpool.generatePalette('input');
     rockpool.generatePalette('output');
     rockpool.generatePalette('converter');
@@ -155,10 +158,7 @@ rockpool.renderLoop = function () {
 
         rockpool.forRules(function(r){
             r.redrawChart();
-            //r.updateVisibility();
         })
-
-        //rockpool.sync();
 
     }
 }
@@ -195,25 +195,47 @@ rockpool.sync = function() {
 
 rockpool.respond = function () {
     rockpool.forRules(function(r){r.respond()})
-    //rockpool.positionModal();
 }
 
 rockpool.registerInput = function( host, channel, code, name, handler ) {
-    console.log('Registering input:', [host,code,channel,name]);
-    rockpool.inputs[[host,code,channel,name].join('_')] = handler;
+    if(rockpool.enable_debug){console.log('Registering input:', [host,code,channel,name]);}
+    rockpool.inputs[[host,channel,code,name].join('_')] = handler;
 }
 
 rockpool.registerOutput = function( host, channel, code, name, handler ) {
-    rockpool.outputs[[host,code,channel,name].join('_')] = handler;
+    rockpool.outputs[[host,channel,code,name].join('_')] = handler;
+}
+
+rockpool.newInactiveModuleFromKey = function(key){
+    var key = key.split('_');
+    var host_idx = parseInt(key[0]);
+    var channel_idx = parseInt(key[1]);
+    var module_code = key[2];
+    var module = rockpool.getModule(host_idx, channel_idx, module_code);
+    module.deactivate();
+    return module;
 }
 
 rockpool.getModule = function(host_idx, channel_idx, module_code) {
-    var id = [host_idx,channel_idx,module_code].join('_');
+    var id;
+
+    if(typeof(module_code) === "undefined"){
+        for(x in rockpool.active_modules){
+            if(x && x.startsWith([host_idx,channel_idx].join('_'))){
+                id = x;
+                break;
+            }
+        }
+        if(id == ""){return false;}
+    }
+    else{
+        id = [host_idx,channel_idx,module_code].join('_');
+    }
 
     var module = rockpool.active_modules[id];
 
     if (!module) {
-         if (typeof(rockpool.module_handlers[module_code]) !== "undefined")  {
+         if (module_code && typeof(rockpool.module_handlers[module_code]) !== "undefined")  {
             rockpool.active_modules[id] = new FlotillaModule(rockpool.module_handlers[module_code], host_idx, channel_idx, module_code);
         } else {
             return false;
@@ -245,13 +267,15 @@ rockpool.initialize = function(){
     }).find('h2');
 
 
-    $('.toolbar').on('click','li',function(e){
+    $('.options').on('click','.active',function(e){
         e.preventDefault();
 
         var o = $(this);
         var action = $(this).data('action');
 
         switch(action){
+            case 'help':
+                break;
             case 'new':
                 new rockpool.rule().start();
                 break;
