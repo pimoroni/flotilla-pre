@@ -21,6 +21,7 @@ rockpool.helpers = {
         var sum = 0;
         var j = 0;
         for( var i in this ){
+            if(isNaN(i)) continue;
             if(isFinite(this[i]) && this[i] !== null){
               sum=sum+parseFloat(this[i]);
                j++;
@@ -37,7 +38,7 @@ rockpool.converters = {
     noop: function () {
         this.name = "Empty"
         this.category = rockpool.category.empty
-        this.icon = "add"
+        this.color = 'navy'
         this.convert = function (value) { return value }        
     },
     /*
@@ -46,12 +47,14 @@ rockpool.converters = {
     halve: function () {
         this.name = "Halve"
         this.category = rockpool.category.maths
+        this.color = 'navy'
         this.icon = "halve"
         this.convert = function (value) { return value / 2.0 }        
     },
     double: function () {
         this.name = "Double"
         this.category = rockpool.category.maths
+        this.color = 'navy'
         this.icon = "double"
         this.convert = function (value) {
             if( value <= 0.5 ){
@@ -64,12 +67,14 @@ rockpool.converters = {
     invert: function () {
         this.name = "Invert"
         this.category = rockpool.category.modify
+        this.color = 'navy'
         this.icon = "invert"
         this.convert = function (value) { return 1 - value }        
     },
     smooth: function () {
         this.name = "Smooth"
         this.category = rockpool.category.modify
+        this.color = 'navy'
         this.icon = "smooth"
         this.values = []
         this.values.average = rockpool.helpers.avg;
@@ -85,33 +90,10 @@ rockpool.converters = {
 
         }
     },
-    /*sine: function(){
-        this.name = "Sine Wave"
-        this.category = rockpool.category.modify
-        this.icon = "sine"
-
-        this.frequency = 0;
-        this.phase = 0.0;
-
-        this.convert = function (new_frequency) { 
-
-            var time = rockpool.time;
-
-            if( new_frequency != this.frequency ){
-                var c = (time * this.frequency + this.phase) % (2.0 * Math.PI);
-                var n = (time * new_frequency) % (2.0 * Math.PI);
-
-                this.phase = c - n;
-                this.frequency = new_frequency;
-            }
-
-            return (Math.sin(time * this.frequency + this.phase) + 1.0) / 2.0;
-
-        }   
-    },*/
     toggle: function () {
         this.name = "Toggle"
         this.category = rockpool.category.modify
+        this.color = 'navy'
         this.icon = "toggle"
 
         this.last_value = 0
@@ -130,23 +112,26 @@ rockpool.converters = {
         }
     },
     /*
-        Deciders
+        Experimental
+        Use case: ?
     */
-    lessThan: function () {
-        this.name = "Less Than"
-        this.category = rockpool.category.compare
-        this.icon = "lt"
+    add: function () {
+        this.name = "Add"
+        this.category = rockpool.category.maths
+        this.color = 'purple'
+        this.icon = "add"
         this.childValue = 0
-        this.convert = function (value) { return ( value < this.childValue ) ? 1 : 0 }
+        this.convert = function (value) { return (this.childValue + value > 1) ? 1 : this.childValue + value}
         this.set     = function (value) { this.childValue = value }
     },
-    greaterThan: function () {
-        this.name = "Greater Than"
-        this.category = rockpool.category.compare
-        this.icon = "gt"
+    subtract: function () {
+        this.name = "Subtract"
+        this.category = rockpool.category.maths
+        this.color = 'purple'
+        this.icon = "add"
         this.childValue = 0
-        this.convert = function (value, idx) { return ( value > this.childValue ) ? 1 : 0 }
-        this.set     = function (value, idx) { this.childValue = value }
+        this.convert = function (value) { return (value - this.childValue < 0) ? 0 : value - this.childValue}
+        this.set     = function (value) { this.childValue = value }
     },
     /*
         Returns the minimum of the two input values
@@ -154,6 +139,7 @@ rockpool.converters = {
     min: function () {
         this.name = "Min"
         this.category = rockpool.category.compare
+        this.color = 'purple'
         this.icon = "min"
         this.childValue = 0
         this.convert = function (value) { return (this.childValue < value) ? this.childValue : value }
@@ -165,18 +151,11 @@ rockpool.converters = {
     max: function () {
         this.name = "Max"
         this.category = rockpool.category.compare
+        this.color = 'purple'
         this.icon = "max"
         this.childValue = 0
         this.convert = function (value) { return (this.childValue > value) ? this.childValue : value }
         this.set     = function (value) { this.childValue = value }
-    },
-    mix: function () {
-        this.name = "Mix"
-        this.category = rockpool.category.modify
-        this.icon = "mix"
-        this.childValue = 0
-        this.convert = function (value, idx) { return (value + this.childValue)/2 }
-        this.set     = function (value, idx) { this.childValue = value }
     },
     /*
         Returns the difference between two inputs
@@ -184,10 +163,44 @@ rockpool.converters = {
     diff: function () {
         this.name = "Difference"
         this.category = rockpool.category.compare
+        this.color = 'purple'
         this.icon = "diff"
         this.childValue = 0
         this.convert = function (value) { return (this.childValue < value) ? value - this.childValue : this.childValue - value }
         this.set     = function (value) { this.childValue = value }
+    },
+    /*
+        Returns the average of two inputs
+    */
+    mix: function () {
+        this.name = "Average"
+        this.category = rockpool.category.modify
+        this.color = 'red'
+        this.icon = "mix"
+        this.childValue = 0
+        this.convert = function (value, idx) { return (value + this.childValue)/2 }
+        this.set     = function (value, idx) { this.childValue = value }
+    },
+    /*
+        Deciders
+    */
+    lessThan: function () {
+        this.name = "Less Than"
+        this.category = rockpool.category.compare
+        this.color = 'red'
+        this.icon = "lt"
+        this.childValue = 0
+        this.convert = function (value) { return ( value < this.childValue ) ? 1 : 0 }
+        this.set     = function (value) { this.childValue = value }
+    },
+    greaterThan: function () {
+        this.name = "Greater Than"
+        this.category = rockpool.category.compare
+        this.color = 'red'
+        this.icon = "gt"
+        this.childValue = 0
+        this.convert = function (value, idx) { return ( value > this.childValue ) ? 1 : 0 }
+        this.set     = function (value, idx) { this.childValue = value }
     },
 /*
     Value   1 0 0 1
@@ -198,6 +211,7 @@ rockpool.converters = {
     latch: function() {
         this.name = "Latch"
         this.category = rockpool.category.modify
+        this.color = 'red'
         this.icon = "latch"
 
         this.latched_value  = 0
@@ -216,25 +230,5 @@ rockpool.converters = {
             }
             this.last_value = value
         }
-    },
-    /*
-        Experimental
-        Use case: ?
-    */
-    add: function () {
-        this.name = "Add"
-        this.category = rockpool.category.maths
-        this.icon = "add"
-        this.childValue = 0
-        this.convert = function (value) { return (this.childValue + value > 1) ? 1 : this.childValue + value}
-        this.set     = function (value) { this.childValue = value }
-    },
-    subtract: function () {
-        this.name = "Subtract"
-        this.category = rockpool.category.maths
-        this.icon = "add"
-        this.childValue = 0
-        this.convert = function (value) { return (value - this.childValue < 0) ? 0 : value - this.childValue}
-        this.set     = function (value) { this.childValue = value }
     }
 }

@@ -4,7 +4,7 @@
         <title>Rockpool - Flotilla</title>
         <link rel="stylesheet" href="css/jquery.fancybox.min.css">
         <link rel="stylesheet" href="css/pure-min.css">
-        <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700' rel='stylesheet' type='text/css'>
         <link rel="stylesheet" href="css/rockpool.css">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,25 +12,11 @@
     </head>
     <body>
         <div class="main">
-            <div class="toolbar" style="margin: 0px auto;width:100%;display:none;">
-                <div id="tools" class="pure-g">
-                    <div class="pure-u-5-5"><ul>
-                        <li data-action="dock" class="button dock">Pick Dock</li>
-                        <li class="spacer">&nbsp;</li>
-                        <li data-action="load" class="button load">Load</li>
-                        <li data-action="save" class="button save">Save</li>
-                        <li class="spacer">&nbsp;</li>
-                        <li data-action="clear" class="button clear">Clear</li>
-                        <li class="spacer">&nbsp;</li>
-                        <li data-action="new" class="button new">New Rule</li>
-                    </ul></div>
-                </div>
-            </div>
             <div class="container">
                 <header class="pure-g">
-                    <div class="pure-u-1-5 center"><h2>Input</h2></div>
-                    <div class="pure-u-3-5 center"><h2>Converters</h2></div>
-                    <div class="pure-u-1-5 center"><h2>Output</h2></div>
+                    <div class="pure-u-1-5 center"><h2>input</h2></div>
+                    <div class="pure-u-3-5 center"><h2>modify</h2></div>
+                    <div class="pure-u-1-5 center"><h2>output</h2></div>
                 </header>
                 <div id="rules">
                 </div>
@@ -39,18 +25,44 @@
                         <div class="rule pure-g">
                             <div class="block toggle"></div>
 
-                            <div class="pure-u-1-5 center block input off type-input generators" style="top: 0px;"><i class="add-input">+</i></div>
+                            <div class="pure-u-1-5 center block input off type-input generators" style="top: 0px;"><i class="add-input"></i>
+                                <div class="active-inputs">
+                                    <ul>
+                                        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+                                    </ul>
+                                </div>
+                            </div>
 
                             <div class="pure-u-1-5 block"></div>
 
-                            <div class="pure-u-1-5 center block converter empty"><i class="add-converter">+</i></div>
+                            <div class="pure-u-1-5 center block converter empty"></div>
 
                             <div class="pure-u-1-5 block"></div>
 
-                            <div class="pure-u-1-5 center block output none type-output general"><i class="add-output">+</i></div>
+                            <div class="pure-u-1-5 center block output none type-output general"><i class="add-output"></i>
+                                <div class="active-outputs">
+                                    <ul>
+                                        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+                                    </ul>
+                                </div></div>
                         </div>
                     </span>
                 </footer>
+            </div>
+        </div>
+        <div class="options closed">
+            <div class="container">
+                <i class="toggle"><img src="css/images/flotilla-anchor.png" /></i>
+                <div class="icon-palette pure-g">
+                    <div class="active color-navy" data-action="save"><i></i><span>Save</span></div>
+                    <div class="active color-navy" data-action="load"><i></i><span>Load</span></div>
+                    <div></div>
+                    <div class="active color-navy" data-action="clear"><i></i><span>Clear</span></div>
+                    <div></div>
+                    <div class="active color-navy" data-action="dock"><i></i><span>Dock</span></div>
+                    <div></div>
+                    <div class="active color-navy" data-action="help"><i></i><span>Help</span></div>
+                </div>
             </div>
         </div>
         <div style="display:none;" class="palettes"></div>
@@ -78,6 +90,15 @@
         <script>
             "use strict";
             $(function () {rockpool.initialize()});
+
+            $(function () {
+
+                $('.options .toggle').on('click',function(e){
+
+                    $(this).parents('.options').toggleClass('open');
+                })
+
+            })
         </script>
     </body>
 </html>

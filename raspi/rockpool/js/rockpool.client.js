@@ -27,7 +27,7 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
         var host = $(this).data('host');
         var details = $(this).data('details');
 
-        console.log('Connecting to', host, details);
+        if(rockpool.enable_debug){console.log('Connecting to', host, details);}
 
         rockpool.closePrompt();
         rockpool.connect(host, rockpool.port, details);
@@ -45,7 +45,7 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
     .append('<div class="choices"><div class="custom"><h3>Custom</h3><p>Don\'t see your dock? Enter the IP address of your Flotilla host.</p><input type="text" value="127.0.0.1"><a href="#">Connect<a></div></div>');
 
 rockpool.addDaemon = function(host, details){
-    console.log('Adding daemon', host, details);
+    if(rockpool.enable_debug){console.log('Adding daemon', host, details);}
 
     if(rockpool.valid_hosts.indexOf(details.canonical_address) != -1) return;
     rockpool.valid_hosts.push(details.canonical_address);
@@ -62,7 +62,7 @@ rockpool.addDaemon = function(host, details){
 }
 
 rockpool.addHost = function(host, details){
-    console.log('Adding valid host', host, details);
+    if(rockpool.enable_debug){console.log('Adding valid host', host, details);}
 
         var daemon = rockpool.host_picker.find('.daemon').filter('[data-host="' + host + '"]');
         daemon.find('> p').hide();
@@ -102,8 +102,6 @@ rockpool.discoverHosts = function(){
         contentType: "application/json",
         dataType: 'jsonp',
         success: function(json) {
-            console.log(json);
-
             for(idx in json.ipv4){
                 rockpool.addScanTarget(json.ipv4[idx], 5000);
             }
@@ -113,7 +111,7 @@ rockpool.discoverHosts = function(){
             rockpool.findHosts();
         },
         error: function(obj,err) {
-            console.log(err);
+            if(rockpool.enable_debug){console.log(err);}
 
             rockpool.addScanTarget('127.0.0.1', 5000);
             rockpool.addScanTarget('raspberrypi', 5000);
@@ -378,7 +376,6 @@ rockpool.connect = function(host, port, details){
 
         rockpool.addToConnectionHistory(host);
 
-        rockpool.enable_keyboard();
         if(typeof(rockpool.on_connect) === "function"){
             rockpool.on_connect();
         }
@@ -470,7 +467,7 @@ rockpool.parseCommand = function(data_in){
             if( module.active == false ){
                 module.activate();
                 rockpool.updatePalettes();
-                rockpool.updateActiveWidgets();
+                rockpool.updateActiveWidgets(module.key);
             }
             return true;
         case 'd': // Disconnect
@@ -478,14 +475,14 @@ rockpool.parseCommand = function(data_in){
             if( !module ) return false;
             module.deactivate();
             rockpool.updatePalettes();
-            rockpool.updateActiveWidgets();
+            rockpool.updateActiveWidgets(module.key);
             return true;
         case 'c': // Connect
             var module = rockpool.getModule(host, channel, device);
             if( !module ) return false;
             module.activate();
             rockpool.updatePalettes();
-            rockpool.updateActiveWidgets();
+            rockpool.updateActiveWidgets(module.key);
             return true;
     }
 

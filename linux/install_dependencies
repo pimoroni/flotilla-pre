@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pkgdeplist=( "libboost-system1.55.0" "libboost-filesystem1.55.0" "libboost-program-options1.55.0" "libboost-date-time1.55.0" )
+pkgdeplist=( "libusb-1.0-0" "libboost-system1.55.0" "libboost-filesystem1.55.0" "libboost-program-options1.55.0" "libboost-date-time1.55.0" )
 
 apt_pkg_req () {
     APT_CHK=$(dpkg-query -W --showformat='${Status}\n' $1|grep "install ok installed")
@@ -51,6 +51,20 @@ if [ -d /usr/lib/x86_64-linux-gnu ]; then
         ln -s /usr/lib/x86_64-linux-gnu/libserialport.so.0.0.0 /usr/lib/x86_64-linux-gnu/libserialport.so
     fi
     chown root:staff /usr/lib/x86_64-linux-gnu/libserialport*
+elif [ -d /usr/lib/i386-linux-gnu ]; then
+    if [ -f /usr/lib/i386-linux-gnu/libserialport.so.0.0.0 ]; then
+        echo -e "libserialport already installed. Updating..."
+    fi
+    cp ./dependencies/libs-i386/libserialport* /usr/lib/i386-linux-gnu/
+
+    if [ ! -f /usr/lib/i386-linux-gnu/libserialport.so.0 ]; then
+        ln -s /usr/lib/i386-linux-gnu/libserialport.so.0.0.0 /usr/lib/i386-linux-gnu/libserialport.so.0
+    fi
+
+    if [ ! -f /usr/lib/i386-linux-gnu/libserialport.so ]; then
+        ln -s /usr/lib/i386-linux-gnu/libserialport.so.0.0.0 /usr/lib/i386-linux-gnu/libserialport.so
+    fi
+    chown root:staff /usr/lib/i386-linux-gnu/libserialport*
 else
     if [ -f /usr/local/lib/libserialport.so.0.0.0 ]; then
         echo -e "libserialport already installed. Updating..."
@@ -58,11 +72,11 @@ else
     cp ./dependencies/libs-i386/libserialport* /usr/local/lib/
 
     if [ ! -f /usr/local/lib/libserialport.so.0 ]; then
-        ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so.0
+        ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialpor$
     fi
 
     if [ ! -f /usr/local/lib/libserialport.so ]; then
-        ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialport.so
+        ln -s /usr/local/lib/libserialport.so.0.0.0 /usr/local/lib/libserialpor$
     fi
     chown root:staff /usr/local/lib/libserialport*
 fi
