@@ -219,16 +219,16 @@ rockpool.rule = function (parent, widget_index) {
 
     this.updateLabels = function(module_key) {
         // module_key is the module which has triggered the update
-        this.getInput().update(this.getInput().handler_key.startsWith(module_key));
+        module_key = module_key || "NONE";
+        this.getInput().update(this.getInput().handler_key.substr(0,module_key.length) === module_key);
         this.converters.forEach(function(converter, idx){
                 converter.update();
             }
         )
         // Avoid recursion!
         if( !this.getOutput().isComparator() ){
-            this.getOutput().update(this.getOutput().handler_key.startsWith(module_key));
+            this.getOutput().update(this.getOutput().handler_key.substr(0,module_key.length) === module_key);
         }
-        
     }
 
     this.kill = function () {
