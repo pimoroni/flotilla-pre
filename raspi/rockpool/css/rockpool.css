@@ -1117,12 +1117,14 @@ footer {
         top: -27px;
         left: 40px;
         transform-origin: 5px 0;
+        -webkit-transform-origin: 5px 0;
     }
     .connected-modules .icon-palette > div:nth-of-type(1).active:before,
     .connected-modules .icon-palette > div:nth-of-type(2).active:before,
     .connected-modules .icon-palette > div:nth-of-type(3).active:before,
     .connected-modules .icon-palette > div:nth-of-type(4).active:before {
         transform: rotate(224deg);
+        -webkit-transform: rotate(224deg);
         height: 240px;
     }
     .connected-modules .icon-palette > div:nth-of-type(5).active:before,
@@ -1130,6 +1132,7 @@ footer {
     .connected-modules .icon-palette > div:nth-of-type(7).active:before, 
     .connected-modules .icon-palette > div:nth-of-type(8).active:before {
         transform: rotate(-224deg);
+        -webkit-transform: rotate(-224deg);
         height: 240px;
     }
 
