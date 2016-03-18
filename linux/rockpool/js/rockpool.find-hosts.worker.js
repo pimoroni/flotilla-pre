@@ -1,6 +1,15 @@
 if (!String.prototype.includes) {
-  String.prototype.includes = function() {'use strict';
-    return String.prototype.indexOf.apply(this, arguments) !== -1;
+  String.prototype.includes = function(search, start) {
+    'use strict';
+    if (typeof start !== 'number') {
+      start = 0;
+    }
+    
+    if (start + search.length > this.length) {
+      return false;
+    } else {
+      return this.indexOf(search, start) !== -1;
+    }
   };
 }
 
@@ -9,9 +18,6 @@ var FlotillaScanner = function(){
     this.attemptConnection = function(index){ 
 
         var obj = this;
-
-        //var connection_timeout = 5750;
-        //var query_timeout = 1000;
 
         if( index > this.scan_total || this.terminate ){
             this.progress = this.scan_total;
@@ -80,7 +86,8 @@ var FlotillaScanner = function(){
                 daemon_details.canonical_address = message[1];
                 if( daemon_details.canonical_address == "" ) daemon_details.canonical_address = host;
                 obj.callback_daemon(host, daemon_details);
-
+                return;
+                
             }
             if( message.includes('# Dock:') ){
 
@@ -93,7 +100,8 @@ var FlotillaScanner = function(){
                 details.dock_index = message[4];
 
                 obj.callback_found(host, details);
-                //socket_attempt.close();
+                return;
+                
             }
         }
         socket_attempt.onerror = function() {
@@ -153,10 +161,6 @@ if( typeof(this.Window) !== "function" ){
         var scanner = new FlotillaScanner();
 
         onmessage = function(event){
-
-            /*if( 'connection_timeout' in event.data ){
-                scanner.connection_timeout = event.data['connection_timeout'];
-            }*/
 
             if( 'attempt_host' in event.data ){
                 var host = event.data['attempt_host'];
