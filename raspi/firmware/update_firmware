@@ -23,7 +23,7 @@ pathoverride="no"
 dfubinpath="./dfu-programmer"
 dockhexpath="./flotilla-dock.hex"
 dockpytool="./firmware-version.py"
-firmwarev="1.12"
+firmwarev="1.13"
 
 confirm() {
     if [ "$FORCE" == '-y' ]; then
