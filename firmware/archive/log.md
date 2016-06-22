@@ -1,5 +1,9 @@
 # Flotilla firmware
 
+2016-06-22
+version 1.13
+md5 96e9eef44061e97398bb2801520a26b1
+
 2016-03-22
 version 1.13
 md5 e5adca936596bf48e614b3e00c8b41bf 
