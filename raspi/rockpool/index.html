@@ -11,6 +11,7 @@
         <meta name="viewport" content="width = device-width, user-scalable = no, initial-scale = 1.0">
     </head>
     <body>
+        <div class="blackout"></div>
         <div class="main">
             <div class="container">
                 <header class="pure-g">
@@ -52,16 +53,16 @@
         </div>
         <div class="options closed">
             <div class="container">
-                <i class="toggle"><img src="css/images/flotilla-anchor.png" /></i>
+                <i class="toggle icon-flotilla"></i>
                 <div class="icon-palette pure-g">
-                    <div class="active color-navy" data-action="save"><i></i><span>Save</span></div>
-                    <div class="active color-navy" data-action="load"><i></i><span>Load</span></div>
+                    <div class="active color-navy" data-action="save"><i class="icon-poke"></i><span>Save</span></div>
+                    <div class="active color-navy" data-action="load"><i class="icon-peek"></i><span>Load</span></div>
                     <div></div>
-                    <div class="active color-navy" data-action="clear"><i></i><span>Clear</span></div>
+                    <div class="active color-navy" data-action="clear"><i class="icon-clear"></i><span>Clear</span></div>
                     <div></div>
-                    <div class="active color-navy" data-action="dock"><i></i><span>Dock</span></div>
+                    <div class="active color-navy" data-action="dock"><i class="icon-dock"></i><span>Dock</span></div>
                     <div></div>
-                    <div class="active color-navy" data-action="help"><i></i><span>Help</span></div>
+                    <div class="active color-navy" data-action="help"><i class="icon-help"></i><span>Help</span></div>
                 </div>
             </div>
         </div>
@@ -90,15 +91,6 @@
         <script>
             "use strict";
             $(function () {rockpool.initialize()});
-
-            $(function () {
-
-                $('.options .toggle').on('click',function(e){
-
-                    $(this).parents('.options').toggleClass('open');
-                })
-
-            })
         </script>
     </body>
 </html>

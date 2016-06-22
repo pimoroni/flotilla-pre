@@ -47,7 +47,7 @@ var FlotillaScanner = function(){
         var details = {dock_user: null, dock_name: null, dock_version: null, dock_serial: null};
 
         clearTimeout(timeout);
-        var socket_attempt = new WebSocket("ws://" + host + ':' + this.port + "/");
+        var socket_attempt =  new WebSocket("ws://" + host + ':' + this.port + "/");
 
         var timeout = setTimeout(function(){
             if( socket_attempt.readyState != socket_attempt.OPEN ){

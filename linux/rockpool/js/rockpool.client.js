@@ -12,6 +12,33 @@ rockpool.attempt_list = [];
 rockpool.minimum_dock_version = 1.1;
 rockpool.current_dock_version = 1.1;
 
+// attach the .equals method to Array's prototype to call it on any array
+Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+
+    // compare lengths - can save a lot of time 
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l=this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].equals(array[i]))
+                return false;       
+        }           
+        else if (this[i] != array[i]) { 
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;   
+        }           
+    }       
+    return true;
+}
+// Hide method from for-in loops
+Object.defineProperty(Array.prototype, "equals", {enumerable: false});
+
 rockpool.host_picker = $('<div>').addClass('host-picker palette')
     .appendTo('.palettes')
     .on('click','.host',function(e){
@@ -19,6 +46,7 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
         e.stopPropagation();
 
         if($(this).hasClass('update-needed')){
+            window.open('http://learn.pimoroni.com');
             return false;
         }
 
@@ -33,16 +61,25 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
         rockpool.connect(host, rockpool.port, details);
     })
     .on('click','.custom a',function(e){
+        rockpool.host_picker.find('.custom').hide();
         e.preventDefault();
         e.stopPropagation();
         var host = $(this).parent().find('input').val();
         rockpool.stopScan();
-        rockpool.closePrompt();
-        rockpool.connect(host, rockpool.port);
+        rockpool.addScanTarget(host);
+        rockpool.findHosts();
+        //rockpool.closePrompt();
+        //rockpool.connect(host, rockpool.port);
     })
-    .append('<header><h1>' + rockpool.languify('Pick Your Dock') + '</h1></header>')
-    .append('<div class="progress"><strong>' + rockpool.languify('Scanning') + '</strong><span></span></div>')
-    .append('<div class="choices"><div class="custom"><h3>Custom</h3><p>Don\'t see your dock? Enter the IP address of your Flotilla host.</p><input type="text" value="127.0.0.1"><a href="#">Connect<a></div></div>');
+    .on('click','.add-manual',function(e){
+        rockpool.host_picker.find('.custom').show();
+    })
+    .append('<header><h1>' + rockpool.languify('searching for docks') + '</h1></header>')
+    .append('<div class="none-found">no docks found, yet! =(</div>')
+    .append('<div class="choices"></div>')
+    .append('<div class="add-manual">Find a dock manually<i class="add-input"></i></div>')
+    .append('<div style="display:none;" class="custom"><h3>Don\'t see your dock? Enter the IP address of your Flotilla host.</h3><input type="text" value="127.0.0.1"><a href="#">Find<a></div>');
+    //.append('<div class="progress"><strong>' + rockpool.languify('Scanning') + '</strong><span></span></div>')
 
 rockpool.addDaemon = function(host, details){
     if(rockpool.enable_debug){console.log('Adding daemon', host, details);}
@@ -54,7 +91,7 @@ rockpool.addDaemon = function(host, details){
 
     if(daemon.length) return;
 
-    $('<div class="daemon"><h3>' + host + ' (v' + details.daemon_version + ')</h3><p>No docks connected!</p></div>')
+    $('<div class="daemon"><h3 style="display:none;">' + host + ' (v' + details.daemon_version + ')</h3><p>No docks connected!</p></div>')
     .attr({
         'data-host':host
     })
@@ -72,7 +109,7 @@ rockpool.addHost = function(host, details){
         if(h.length) return;
 
         //rockpool.valid_hosts.push(details.dock_serial);
-        h = $('<div><p>' + details.dock_name + '</p><small>' + details.dock_user + '</small></div>')
+        h = $('<div><p>' + details.dock_name + '</p></div>') //<small>' + details.dock_user + '</small></div>')
             .data({
                 'host':host,
                 'details':details
@@ -83,13 +120,28 @@ rockpool.addHost = function(host, details){
             .addClass('host');
 
         if(details.dock_version < rockpool.minimum_dock_version){
-            h.append('<small class="error">Update Needed!</small>');
+            h.append('<small class="error">this dock needs an <em>update</em></small>');
             h.addClass('update-needed');
         }
-        h.append('<small>v' + details.dock_version + '</small>');
+        //h.append('<small>v' + details.dock_version + '</small>');
 
         h.appendTo(daemon);
+
+        rockpool.host_picker.find('.none-found').hide();
     //}
+}
+
+rockpool._discover = false;
+rockpool._discover_retries = 0;
+rockpool._discover_retry_time = 6000;
+rockpool.startDiscovery = function(){
+    rockpool._discover = false;
+    rockpool.discoverHosts();
+
+}
+
+rockpool.stopDiscovery = function(){
+    rockpool._discover = false;
 }
 
 rockpool.discoverHosts = function(){
@@ -172,7 +224,13 @@ rockpool.addScanTarget = function(target, timeout){
             target = host;
         }
     }
+    for(var x = 0; x < rockpool.attempt_list.length; x++){
+        if(rockpool.attempt_list[x].target.equals(target)) {
+            return false;
+        }
+    }
     rockpool.attempt_list.push({target:target, timeout:timeout});
+    return true;
 }
 
 rockpool.addPreviousTargets = function(){
@@ -195,9 +253,12 @@ rockpool.findHosts = function(){
 
     var progress_total = 0;
 
-    rockpool.resetHosts();
+    if(!rockpool._discover){
+        rockpool._discover = true;
+        rockpool.resetHosts();
 
-    rockpool.prompt(rockpool.host_picker, false);
+        rockpool.prompt(rockpool.host_picker, false);
+    }
 
     var history = rockpool.loadConnectionHistory();
     for(var host in history){
@@ -217,21 +278,6 @@ rockpool.findHosts = function(){
         progress_total += (end-start);
 
         spawnWorker(rockpool.attempt_list[x]);
-    }
-
-    function stopOtherScans(subnet){
-        for(var x = 0; x < rockpool.attempt_list.length; x++){
-            if( rockpool.attempt_list[x].target.slice(0,3).join('.') != subnet ){
-
-                var start_end = rockpool.attempt_list[x].target[3];
-                var start     = start_end[0];
-                var end       = start_end[1];
-
-                if(rockpool.debug_enabled) console.log('Terminating redundant range due to subnet ' + rockpool.attempt_list[x].target)
-
-                rockpool.scan_workers[rockpool.attempt_list[x].target].stop(rockpool.scan_workers[rockpool.attempt_list[x].target]);
-            }
-        }
     }
 
     function spawnWorker(attempt_host){
@@ -254,7 +300,6 @@ rockpool.findHosts = function(){
                     var details = msg.data['details'];
                     var successful_subnet = host.split('.').slice(0,3).join('.');
                     rockpool.addHost(host,details);
-                    //stopOtherScans(successful_subnet);
                 }
 
                 if( 'progress' in msg.data ){
@@ -289,7 +334,7 @@ rockpool.findHosts = function(){
         }
     }
 
-    function updateFindHostProgress(){
+   function updateFindHostProgress(){
 
         var progress = 0;
 
@@ -299,18 +344,10 @@ rockpool.findHosts = function(){
             }
         }
 
-        rockpool.host_picker
-            .find('.progress span')
-            .css('width', ((progress/progress_total) * 100) + '%');
-
-        if( progress == progress_total ){
-            rockpool.host_picker.find('strong').html(rockpool.languify('Finished!'));
+        if(progress == 0 && rockpool._discover && rockpool._discover_retries < 4){
+                rockpool._discover_retries += 1;
+                setTimeout(rockpool.discoverHosts,rockpool._discover_retry_time);
         }
-        else
-        {
-            rockpool.host_picker.find('strong').html(rockpool.languify('Searching for Flotilla&hellip;'));
-        }
-
     }
 }
 
@@ -462,7 +499,7 @@ rockpool.parseCommand = function(data_in){
 
     switch(command){
         case 'u': // Update
-            var module = rockpool.getModule(host, channel, device);
+            var module = rockpool.getModule(host, channel, device); 
             module.receive(data);
             if( module.active == false ){
                 module.activate();
