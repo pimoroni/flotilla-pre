@@ -22,8 +22,20 @@ DISCLAIMER
 pathoverride="no"
 dfubinpath="./dfu-programmer"
 dockhexpath="./flotilla-dock.hex"
-dockpytool="./firmware-version.py"
+docktool="./firmware-version"
 firmwarev="1.14"
+
+success() {
+    echo "$(tput setaf 2)$1$(tput sgr0)"
+}
+
+warning() {
+    echo "$(tput setaf 1)$1$(tput sgr0)"
+}
+
+newline() {
+    echo ""
+}
 
 confirm() {
     if [ "$FORCE" == '-y' ]; then
@@ -38,22 +50,10 @@ confirm() {
     fi
 }
 
-success() {
-    echo "$(tput setaf 2)$1$(tput sgr0)"
-}
-
-warning() {
-    echo "$(tput setaf 1)$1$(tput sgr0)"
-}
-
-newline() {
-    echo ""
-}
-
 sudocheck() {
     if [ $(id -u) -ne 0 ]; then
         echo -e "Install must be run as root. Try 'sudo ./$scriptname'\n"
-        exit 1
+        exit
     fi
 }
 
@@ -89,6 +89,7 @@ if [ $pathoverride == "yes" ]; then
     fi
 fi
 
+newline
 echo "Flotilla Firmware Updater"
 
 if [ -f $dockhexpath ] || [ -L $dockhexpath ]; then
@@ -97,46 +98,84 @@ if [ -f $dockhexpath ] || [ -L $dockhexpath ]; then
 else
     warning "No flotilla-dock.hex file found. Exiting!"
     newline
-    exit 1
+    exit
 fi
 
-if python -c "import flotilla" 2>&1 >/dev/null | grep "No module named flotilla"; then
-    echo "The flotilla Python API is not installed."
-    echo "This is not essential to update the firmware"
-    echo "but should you wish to you can install it using:"
-    echo "\curl -sS get.pimoroni.com/flotilla | bash"
-    newline
+# check if dock is plugged in
+
+if command -v lsusb > /dev/null; then
+
+    RESULT=$(lsusb -d 16d0:08c3)
+
+    if [ -z "$RESULT" ]; then
+        echo "Plug in your Flotilla Dock now."
+    fi
+
+    while ! lsusb -d 16d0:08c3; do
+        pause=$(($pause++))
+        if [ $pause = 10 ]; then
+            break
+        fi
+        sleep 1
+    done
+
+elif command -v ioreg > /dev/null; then
+
+    pause=0
+    HEXDOCK=$(ioreg | grep "Flotilla Dock")
+
+    if [ -z "$HEXDOCK" ]; then
+        echo "Plug in your Flotilla Dock now."
+    fi
+
+    while [ -z "$HEXDOCK" ]; do
+        HEXDOCK=$(ioreg | grep "Flotilla Dock")
+        pause=$(($pause+1))
+        if [ $pause = 10 ]; then
+            break
+        fi
+        sleep 1
+    done
+fi
+
+# check if dock firmware is current
+
+echo "Reading current firmware version..."
+sleep 1
+
+if [ -f "$docktool.py" ]; then
+    if python -c "import flotilla" 2>&1 >/dev/null | grep "No module named flotilla"; then
+        pythonapi=false
+        echo "The flotilla Python API is not installed"
+        echo "Dock current version unknown"
+    else    
+        pythonapi=true
+        firmwared=$($docktool | grep "Version" | rev | cut -c 1-4 | rev )
+        echo "Version: $firmwared"
+    fi
+elif [ -f "$docktool" ]; then
+    firmwared=$($docktool | grep "Version" | rev | cut -c 1-4 | rev )
+    echo "Version: $firmwared"
 else
-    success "Please plug in your Flotilla Dock now."
-    read -rsp $'Press any key to continue...\n' -n1 key < /dev/tty
-    newline
-    echo "Reading current firmware version..."
-    sleep 5
-    if [ -f $dockpytool ]; then
-        sudo python $dockpytool
-        firmwared=$($dockpytool | grep "Version")
-        if $dockpytool | grep "$firmwarev" > /dev/null; then
-            newline
-            echo "Your dock is already flashed with the latest firmware"
-            if confirm "Would you like to reflash it anyway?"; then
-                newline
-            else
-                newline
-                exit
-            fi
-        else
-            echo "Your dock firmware will be updated to"
-            echo "Version: $firmwarev"
-            newline
-            if [[ "$firmwared" < "Version: 1.00" ]]; then
-                warning "Note: This update will break compatibility with older versions"
-                warning "of flotilla and rockpool. Press CTRL+C now if you wish to abort."
-                newline
-                read -rsp $'Press any key to continue...\n' -n1 key < /dev/tty
-            fi
+    echo "no version checker tool found"
+fi
+
+if  $pythonapi; then
+    if [[ "$firmwared" < "$firmwarev" ]]; then
+        echo "Your dock firmware needs to be updated!"
+        read -rsp $'Press any key to continue...\n' -n1 key
+    else
+        newline
+        echo "Your dock is already flashed with the latest firmware"
+        if ! confirm "Would you like to reflash it anyway?"; then
+            exit 1
         fi
     fi
 fi
+
+# flashing dock firmware
+
+echo "Flashing dock firmware..."
 
 if command -v lsusb > /dev/null; then
 
@@ -171,11 +210,12 @@ elif command -v ioreg > /dev/null; then
 
     if [ ! -z "$HEXDOCK" ]; then
         warning "Please unplug your Flotilla Dock!"
-        while [ ! -z "$HEXDOCK" ]; do
-            HEXDOCK=$(ioreg | grep "Flotilla Dock")
-            sleep 0.01
-        done
     fi
+
+    while [ ! -z "$HEXDOCK" ]; do
+        HEXDOCK=$(ioreg | grep "Flotilla Dock")
+        sleep 0.01
+    done
 
     newline
     success "Plug in your Flotilla Dock now."
@@ -196,7 +236,7 @@ else
     sudo sleep 2
     newline
     success "Plug in your Flotilla Dock now."
-    read -rsp $'Press any key to continue...\n' -n1 key < /dev/tty
+    read -rsp $'Press any key to continue...\n' -n1 key
     newline
 
     if sudo $dfubinpath atxmega32a4u erase 2>&1 | grep -q "no device present"; then
