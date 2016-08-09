@@ -111,9 +111,10 @@ else
 fi
 
 if  $pythonapi; then
-    if [[ "$firmwared" < "$firmwarev" ]]; then
+    if [ -z "$firmwared" ]; then
+        echo "Your dock's firmware version could not be determined"
+    elif [[ "$firmwared" < "$firmwarev" ]]; then
         echo "Your dock firmware needs to be updated!"
-        exit 1
     else
         echo "Your dock is flashed with the latest firmware"
     fi

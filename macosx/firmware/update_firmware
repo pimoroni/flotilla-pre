@@ -161,7 +161,10 @@ else
 fi
 
 if  $pythonapi; then
-    if [[ "$firmwared" < "$firmwarev" ]]; then
+    if [ -z "$firmwared" ]; then
+        echo "Your dock's firmware version could not be determined"
+        read -rsp $'Press any key to continue...\n' -n1 key
+    elif [[ "$firmwared" < "$firmwarev" ]]; then
         echo "Your dock firmware needs to be updated!"
         read -rsp $'Press any key to continue...\n' -n1 key
     else
