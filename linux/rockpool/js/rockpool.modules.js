@@ -367,7 +367,8 @@ rockpool.module_handlers['weather'] = {
                 var lowest = options ? options.lowest : -40.00;
                 var temp = this.data.temperature / 100.00;
 
-                if(temp > temp) {temp = highest}
+                temp = Math.min(temp, highest);
+                temp = Math.max(temp, lowest);
 
                 var output_temp = (temp - lowest) / (highest-lowest);
 
@@ -502,12 +503,13 @@ var number_digit_map = [
 
 rockpool.module_handlers['number'] = {
 	'title': 'Number',
+    'average': false,
     'address': 0x63,
     'color': 'red',
     'icon': 'number',
     'send': function(data){
         // Input should look like "XXXX" or "X.XXX" or "XX.XX" or "XX:XX" or "XX:X'"
-        console.log(data);
+        //console.log(data);
         var display = [0,0,0,0,0,0,0]; // 7 bytes, char 1-4, colon, apostrophe and brightness
 
         for(var x = 0; x<data.number.toString().length; x++){
@@ -525,16 +527,48 @@ rockpool.module_handlers['number'] = {
 
         display[6] = data.brightness; // Brightness
 
+        console.log(data.number, display);
+
         return [ display ];
     },
 	'outputs': {
 		'number': function() {
+            this.raw = function(){
+                return this.data.number;
+            },
 			this.name = "Number"
 			this.data = {number:"0000", brightness:50, colon: 0, apostrophe: 0}
+
+            this.options = [
+                {name: 'Number', fn: function(value,t){
+                    t.data.number = t.pad( Math.ceil(value * 1000).toString(), 4 );
+                }},
+                {name: 'Hour', fn: function(value,t){
+                    t.data.number = t.pad( Math.ceil(value * 23).toString(), 2) + t.data.number.slice(2,4);
+                }},
+                {name: 'Minute', fn: function(value,t){
+                    var hours = t.data.number.slice(0,2).toString();
+                    t.data.number = hours + t.pad( Math.ceil(value * 59).toString(), 2);
+                }},
+                {name: 'Second', fn: function(value,t){
+                    var seconds = Math.ceil(value * 59);
+                    //var minutes = t.data.number.slice(0,2).toString();
+                    //t.data.number = minutes + t.pad( seconds.toString(), 2 );
+                    t.data.colon = (seconds % 2);
+                }}
+            ]
+
 			this.pad = function (str, max) {
 				return str.length < max ? this.pad("0" + str, max) : str;
 		      }
-			this.set = function (value) { this.data.number = this.pad( Math.ceil(value * 1000).toString(), 4 ); }
+			this.set = function (value, id, options) {
+
+                if(!options) return false;
+
+                options.fn(value,this);
+
+                //this.data.number = this.pad( Math.ceil(value * 1000).toString(), 4 ); 
+            }
 		}
 	}
 }

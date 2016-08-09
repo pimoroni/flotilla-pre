@@ -628,6 +628,24 @@ i .name span {
     overflow:hidden;
 }
 
+.saves .file-drop-zone {
+    border-radius: 10px;
+    border: 10px dotted #195E95;
+    margin: 0px 10px 10px 10px;
+    padding: 15px;
+    background: rgba(25, 94, 149, 0.3);
+    color: #195E95;
+    text-align: center;
+    text-transform: lowercase;
+    font-size: 30px;
+    font-weight: bold;
+}
+.file-drop-zone.invalid {
+    border-color: #ed1457;
+    background: rgba(237, 20, 87, 0.3);
+    color: #ed1457;
+    transition:background 0.2s, color 0.2s, border-color 0.2s;
+}
 
 .saves ul, .saves li {
     margin:0;
@@ -717,6 +735,23 @@ i .name span {
 }
 .palette.save-load .delete {
     background-color:#ED1457;
+}
+.palette.save-load .download {
+    background-color:#02B186;
+    position:absolute;
+    right:67px;
+}
+.palette.save-load .download:before {
+    content: '';
+    display:block;
+    background:transparent;
+    width:0;
+    height:0;
+    border: 21px solid transparent;
+    border-top-color: #FFF;
+    position: absolute;
+    left: 15px;
+    top: 31px;
 }
 
 .palette header {

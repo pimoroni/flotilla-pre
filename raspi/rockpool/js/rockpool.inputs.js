@@ -54,9 +54,9 @@ rockpool.inputs = {
         this.color = "navy"
 
         this.options = [
-            {name:'Minute'},
-            {name:'Hour'},
-            {name:'Day'}
+            {name:'Seconds'},
+            {name:'Minutes'},
+            {name:'Hours'}
         ];
 
         this.raw = function(){
@@ -69,11 +69,11 @@ rockpool.inputs = {
             var d = new Date();
 
             switch(type){
-                case 'Minute':
+                case 'Seconds':
                     return d.getSeconds() / 59;
-                case 'Hour':
+                case 'Minutes':
                     return d.getMinutes() / 59;
-                case 'Day':
+                case 'Hours':
                     return d.getHours() / 23;
 
             }

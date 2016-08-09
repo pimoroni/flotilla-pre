@@ -95,12 +95,12 @@ rockpool.forRules = function(fn) {
     rockpool.rules = rockpool.rules.filter(function(rule){
         return !rule.deleted;
     });
+    
     if(rockpool.rules.length == 0) return false;
 
-    var total = rockpool.rules.length;
-
-    while(total--){
-        fn(rockpool.rules[total])
+    for(var idx = 0; idx < rockpool.rules.length; idx++)
+    {
+        fn(rockpool.rules[idx])
     }
 }
 
@@ -297,6 +297,7 @@ rockpool.initialize = function(){
 
         switch(action){
             case 'help':
+                window.open('http://flotil.la');
                 break;
             case 'new':
                 new rockpool.rule().start();
