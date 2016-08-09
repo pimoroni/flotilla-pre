@@ -303,8 +303,13 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
                 var dom_slider_label = $('<strong>').text(option.name).appendTo(dom_option);
 
                 if(type == 'input'){
-                   var percent = rule.getInput().handler.options[idx].value;
-                   if(!isNaN(percent)){
+                    var percent = NaN;
+
+                    if(rule){
+                        percent = rule.getInput().handler.options[idx].value;
+                    }
+                    
+                    if(!isNaN(percent)){
                        dom_option.data('value', percent);
                        dom_option.find('strong').text(Math.round(percent*100.0) + '%');
                        dom_option.find('div').css({width:Math.round(percent*100.0) + '%'});
