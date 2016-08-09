@@ -1,1 +1,0 @@
-../../firmware/firmware-version.py
