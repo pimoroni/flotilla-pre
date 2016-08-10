@@ -23,7 +23,7 @@ pathoverride="no"
 dfubinpath="./dfu-programmer"
 dockhexpath="./flotilla-dock.hex"
 docktool="./firmware-version"
-firmwarev="1.14"
+firmwarev=$(cat ./flotilla-dock.txt)
 
 success() {
     echo "$(tput setaf 2)$1$(tput sgr0)"
