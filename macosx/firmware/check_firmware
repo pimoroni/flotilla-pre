@@ -20,7 +20,7 @@ was written for this script.
 DISCLAIMER
 
 docktool="./firmware-version"
-firmwarev="1.14"
+firmwarev=$(cat ./flotilla-dock.txt)
 
 success() {
     echo "$(tput setaf 2)$1$(tput sgr0)"
