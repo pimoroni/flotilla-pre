@@ -9,8 +9,9 @@ rockpool.connection_timeout = 500; // seems stable at (250 * number of ranges to
 
 rockpool.valid_hosts = [];
 rockpool.attempt_list = [];
-rockpool.minimum_dock_version = 1.1;
-rockpool.current_dock_version = 1.1;
+rockpool.minimum_dock_version = 1.14;
+rockpool.current_dock_version = 1.14;
+rockpool.dock_update_url = "http://learn.flotil.la/getting-started";
 
 // attach the .equals method to Array's prototype to call it on any array
 Array.prototype.equals = function (array) {
@@ -112,7 +113,7 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
         e.stopPropagation();
 
         if($(this).hasClass('update-needed')){
-            window.open('http://learn.pimoroni.com');
+            window.open(rockpool.dock_update_url);
             return false;
         }
 
