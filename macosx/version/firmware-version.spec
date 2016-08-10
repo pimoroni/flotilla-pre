@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['firmware-version.py'],
-             pathex=['/Users/rogue/GitHub/Pimoroni/flotilla-pre/macosx/version'],
+             pathex=['/Users/rogue/GitHub/flotilla-pre/macosx/version'],
              binaries=None,
              datas=None,
              hiddenimports=[],
