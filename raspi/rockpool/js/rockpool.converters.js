@@ -134,6 +134,35 @@ rockpool.converters = {
         this.convert = function (value) { return (value - this.childValue < 0) ? 0 : value - this.childValue}
         this.set     = function (value) { this.childValue = value }
     },
+    multiply: function () {
+        this.name = "Multiply"
+        this.category = rockpool.category.maths
+        this.color = 'purple'
+        this.icon = "double"
+        this.childValue = 0
+        this.convert = function (value) { 
+            var thisValue = value * 100;
+            var childValue = this.childValue * 100;
+
+            return Math.min( 1.0, (thisValue * childValue) / 100 );
+
+        }
+        this.set     = function (value) { this.childValue = value }
+    },
+    divide: function () {
+        this.name = "Divide"
+        this.category = rockpool.category.maths
+        this.color = 'purple'
+        this.icon = "halve"
+        this.childValue = 0
+        this.convert = function (value) { 
+            var thisValue = value * 100;
+            var childValue = this.childValue * 100;
+
+            return childValue > 0 ? (thisValue / childValue) / 100 : 0
+        }
+        this.set     = function (value) { this.childValue = value }
+    },
     /*
         Returns the minimum of the two input values
     */
