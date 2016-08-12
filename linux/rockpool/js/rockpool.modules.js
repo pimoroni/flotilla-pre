@@ -367,7 +367,8 @@ rockpool.module_handlers['weather'] = {
                 var lowest = options ? options.lowest : -40.00;
                 var temp = this.data.temperature / 100.00;
 
-                if(temp > temp) {temp = highest}
+                temp = Math.min(temp, highest);
+                temp = Math.max(temp, lowest);
 
                 var output_temp = (temp - lowest) / (highest-lowest);
 
@@ -486,37 +487,65 @@ rockpool.module_handlers['matrix'] = {
         }
     }
 }
+/*
+    128
+    --
+ 4 |  | 64
+ 2  --
+ 8 |  | 32
+    --   . 1
+    16
+*/
 
 var number_digit_map = [
- 252,//0b11111100,
- 96, //0b01100000,
- 218,//0b11011010,
- 242,//0b11110010,
- 102,//0b01100110,
- 182,//0b10110110,
- 190,//0b10111110,
- 224,//0b11100000,
- 254,//0b11111110,
- 230 //0b11100110
+ 2, // -
+ 0, // .
+ 64+8, // /
+ 252,//0b11111100, 0
+ 96, //0b01100000, 1
+ 218,//0b11011010, 2
+ 242,//0b11110010, 3
+ 102,//0b01100110, 4
+ 182,//0b10110110, 5
+ 190,//0b10111110, 6
+ 224,//0b11100000, 7
+ 254,//0b11111110, 8
+ 230, //0b11100110 9
+ 0,   // :
+ 0,   // ;
+ 0,   // <
+ 0,   // =
+ 0,   // >
+ 0,   // ?
+ 0,   // @
+ 0,   // A
+ 0,   // B
+ 16+8+2,       // C
+ 128+64+32+16+8+4, // D
+ 128+16+8+4+2,     // E
+ 128+8+4+2,        // F
 ]
 
 rockpool.module_handlers['number'] = {
 	'title': 'Number',
+    'average': false,
     'address': 0x63,
     'color': 'red',
     'icon': 'number',
     'send': function(data){
         // Input should look like "XXXX" or "X.XXX" or "XX.XX" or "XX:XX" or "XX:X'"
-        console.log(data);
+        //console.log(data);
         var display = [0,0,0,0,0,0,0]; // 7 bytes, char 1-4, colon, apostrophe and brightness
 
         for(var x = 0; x<data.number.toString().length; x++){
 
-            var ord = data.number.toString().charCodeAt(x) - 48;
+            var ord = data.number.toString().charCodeAt(x) - 45;
 
-            if( ord >= 0 && ord < 48+number_digit_map.length){
+            if( ord >= 0 && ord < 45+number_digit_map.length){
                 display[x] = number_digit_map[ord];
             }
+
+            display[x] += (data.period[x]) ? 1 : 0;
 
         }
 
@@ -529,12 +558,85 @@ rockpool.module_handlers['number'] = {
     },
 	'outputs': {
 		'number': function() {
+            this.raw = function(option_index, value){
+                if( this.options[option_index].raw ){
+                    return this.options[option_index].raw(value, this);
+                }
+
+                return this.data.number;
+            },
 			this.name = "Number"
-			this.data = {number:"0000", brightness:50, colon: 0, apostrophe: 0}
+			this.data = {number:"0000", brightness:50, colon: 0, apostrophe: 0, period: [0,0,0,0]}
+
+            this.options = [
+                {name: 'Number', fn: function(value,t){
+                    t.data.apostrophe = 0;
+                    t.data.period = [0,0,0,0];
+                    t.data.number = t.pad( Math.ceil(value * 1000).toString(), 4 );
+                }},
+                {name: 'Temperature', raw: function(value, t){
+
+                    var temp = Math.round((value - 0.5) * 1000) / 10;
+
+                    temp = temp.toFixed(1);
+
+                    if (temp.length < 3){
+                        temp  = " " + temp;
+                    }
+
+                    return temp + "c";
+
+                },fn: function(value,t){
+
+                    var temp = Math.round((value - 0.5) * 1000) / 10;
+
+                    temp = temp.toFixed(1).replace('.','');
+
+                    if(temp > 0){
+                            t.data.apostrophe = 1;
+                            t.data.period = [0,1,0,0];
+                    }
+                    else
+                    {
+                            t.data.apostrophe = 0;
+                            t.data.period = [0,0,1,0];
+                    }
+
+                    if (temp.length < 3){
+                        temp  = " " + temp;
+                    }
+
+                    t.data.number = temp + "C";
+                }},
+                {name: 'Hour', fn: function(value,t){
+                    t.data.period = [0,0,0,0];
+                    t.data.number = t.pad( Math.ceil(value * 23).toString(), 2) + t.data.number.slice(2,4);
+                }},
+                {name: 'Minute', fn: function(value,t){
+                    t.data.period = [0,0,0,0];
+                    var hours = t.data.number.slice(0,2).toString();
+                    t.data.number = hours + t.pad( Math.ceil(value * 59).toString(), 2);
+                }},
+                {name: 'Second', fn: function(value,t){
+                    t.data.period = [0,0,0,0];
+                    var seconds = Math.ceil(value * 59);
+                    //var minutes = t.data.number.slice(0,2).toString();
+                    //t.data.number = minutes + t.pad( seconds.toString(), 2 );
+                    t.data.colon = (seconds % 2);
+                }}
+            ]
+
 			this.pad = function (str, max) {
 				return str.length < max ? this.pad("0" + str, max) : str;
 		      }
-			this.set = function (value) { this.data.number = this.pad( Math.ceil(value * 1000).toString(), 4 ); }
+			this.set = function (value, id, options) {
+
+                if(!options) return false;
+
+                options.fn(value,this);
+
+                //this.data.number = this.pad( Math.ceil(value * 1000).toString(), 4 ); 
+            }
 		}
 	}
 }

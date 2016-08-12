@@ -23,18 +23,20 @@ rockpool.pressed={
 rockpool.inputs = {
     state: function() {
         this.name = "Value"
-        this.icon = "half"
-        this.bgColor = rockpool.palette.blue
-        this.category = 'Value'
+        this.icon = "value"
         
         this.options = [
-                {name:'Off',     value: 0.0, icon: "off" },
+                //{name:'Off',     value: 0.0, icon: "off" },
                 {name:'Percentage', value: 0.5, ui: 'slider' },
-                {name:'On',      value: 1.0, icon: "on" }
+                //{name:'On',      value: 1.0, icon: "on" }
             ]
 
         this.setValue = function(option,value){
             this.options[option].value = parseFloat(value);
+        }
+
+        this.raw = function(option){
+            return Math.round(this.options[option].value*100) + '%';
         }
 
         this.getValue = function(option){
@@ -52,9 +54,9 @@ rockpool.inputs = {
         this.color = "navy"
 
         this.options = [
-            {name:'Minute'},
-            {name:'Hour'},
-            {name:'Day'}
+            {name:'Seconds'},
+            {name:'Minutes'},
+            {name:'Hours'}
         ];
 
         this.raw = function(){
@@ -67,11 +69,11 @@ rockpool.inputs = {
             var d = new Date();
 
             switch(type){
-                case 'Minute':
+                case 'Seconds':
                     return d.getSeconds() / 59;
-                case 'Hour':
+                case 'Minutes':
                     return d.getMinutes() / 59;
-                case 'Day':
+                case 'Hours':
                     return d.getHours() / 23;
 
             }
@@ -89,7 +91,7 @@ rockpool.inputs = {
             {name:'Slow', speed:15},
             {name:'Medium', speed:10},
             {name:'Fast', speed:5},
-            {name:'Custom', speed:5, ui:'slider'}
+            //{name:'Custom', speed:5, ui:'slider'}
         ];
 
         this.getValue = function(option){
@@ -128,7 +130,7 @@ rockpool.inputs = {
             {name:'Slow', frequency:0.01},
             {name:'Medium', frequency:0.5},
             {name:'Fast', frequency:1.0},
-            {name:'Custom', frequency:9.0, ui:'slider'}
+            //{name:'Custom', frequency:9.0, ui:'slider'}
         ];
 
         this.frequency = 0;
@@ -170,7 +172,7 @@ rockpool.inputs = {
             {name:'Slow', speed:1.0},
             {name:'Medium', speed:5.0},
             {name:'Fast', speed:9.0},
-            {name:'Custom', speed:9.0, ui:'slider'}
+            //{name:'Custom', speed:9.0, ui:'slider'}
         ];
 
         this.getValue = function(option){
@@ -188,40 +190,7 @@ rockpool.inputs = {
             return Math.round(rockpool.time/(90/speed)) % 2;
 
         }
-    }/*,
-    pattern: function () {
-        this.name = "Pattern"
-        this.sindex = 0
-        this.icon = "random"
-        this.bgColor = rockpool.palette.blue
-        this.category = 'Pattern'
-
-        this.options = [
-                {category: 'Waveforms', name:'Sine',     sequence: function(){ return (Math.sin(rockpool.time/10) + 1.0) / 2.0 }, icon: "sine"},
-                {category: 'Waveforms', name:'Random',   sequence: function(){ return Math.random() }, icon: "random" },
-                {category: 'Waveforms', name:'Pulse',    sequence: function(){ return 1.0 - (((rockpool.time/10) % 10) / 10.0);}, icon: "pulse"}, // [0, 0.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-                {category: 'Waveforms', name:'Square',   sequence: function(){ return Math.round(rockpool.time/10) % 2;}, icon: "square"}, // [0, 0, 1, 1]
-                {category: 'Waveforms', name:'Triangle', sequence: function(){ return Math.abs(((rockpool.time/10)%10)-5)/5.0;console.log(r);}, icon: "triangle"}, // [0, 0.5, 1, 0.5]
-                {category: 'Waveforms', name:'Saw',      sequence: function(){ return (((rockpool.time/10) % 5) / 5.0);}, icon: "saw"}//, //[1,0.5,0]
-                //{category: 'Waveforms', name:'Clock',    sequence: function(){ return ((rockpool.time/10) % 2) / 2.0;}, icon: "clock"} // function(){ var d = new Date(); return d.getTime() % 2;}
-            ]
-
-        this.get = function ( options ) {
-            var sequence = ( options && options.sequence ) ? options.sequence : this.sequence;
-
-            if( !sequence ) return 0
-
-            if( typeof( sequence ) === 'function' ){
-                return sequence();
-            }
-            var value =  sequence[this.sindex]
-            this.sindex++
-            if( this.sindex >= sequence.length ){
-                this.sindex = 0
-            }
-            return value;
-        }
-    },*/
+    }
 }
 
 if(window.DeviceMotionEvent) {

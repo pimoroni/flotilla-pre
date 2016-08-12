@@ -9,8 +9,102 @@ rockpool.connection_timeout = 500; // seems stable at (250 * number of ranges to
 
 rockpool.valid_hosts = [];
 rockpool.attempt_list = [];
-rockpool.minimum_dock_version = 1.1;
-rockpool.current_dock_version = 1.1;
+rockpool.minimum_dock_version = 1.14;
+rockpool.current_dock_version = 1.14;
+rockpool.dock_update_url = "http://learn.flotil.la/getting-started";
+
+// attach the .equals method to Array's prototype to call it on any array
+Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+
+    // compare lengths - can save a lot of time 
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l=this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].equals(array[i]))
+                return false;       
+        }           
+        else if (this[i] != array[i]) { 
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;   
+        }           
+    }       
+    return true;
+}
+// Hide method from for-in loops
+Object.defineProperty(Array.prototype, "equals", {enumerable: false});
+
+rockpool.cp437 = [
+               0xC7,   0xFC,   0xE9,   0xE2,   0xE4,   0xE0,   0xE5,   0xE7,
+               0xEA,   0xEB,   0xE8,   0xEF,   0xEE,   0xEC,   0xC4,   0xC5,
+               0xC9,   0xE6,   0xC6,   0xF4,   0xF6,   0xF2,   0xFB,   0xF9,
+               0xFF,   0xD6,   0xDC,   0xA2,   0xA3,   0xA5,  0x20A7, 0x192,
+               0xE1,   0xED,   0xF3,   0xFA,   0xF1,   0xD1,   0xAA,   0xBA,
+               0xBF,  0x2310,  0xAC,   0xBD,   0xBC,   0xA1,   0xAB,   0xBB,
+              0x2591, 0x2592, 0x2593, 0x2502, 0x2524, 0x2561, 0x2562, 0x2556,
+              0x2555, 0x2563, 0x2551, 0x2557, 0x255D, 0x255C, 0x255B, 0x2510,
+              0x2514, 0x2534, 0x252C, 0x251C, 0x2500, 0x253C, 0x255E, 0x255F,
+              0x255A, 0x2554, 0x2569, 0x2566, 0x2560, 0x2550, 0x256C, 0x2567,
+              0x2568, 0x2564, 0x2565, 0x2559, 0x2558, 0x2552, 0x2553, 0x256B,
+              0x256A, 0x2518, 0x250C, 0x2588, 0x2584, 0x258C, 0x2590, 0x2580,
+              0x3B1,  0x3B2,  0x393,  0x3C0,  0x3A3,  0x3C3,  0x3BC,  0x3C4,
+              0x3A6,  0x398,  0x3A9,  0x3B4,  0x221E, 0x3C6,  0x3B5,  0x2229,
+              0x2261,  0xB1,  0x2265, 0x2264, 0x2320, 0x2321,  0xF7,  0x2248,
+              0xB0,   0x2219,  0xB7,  0x221A, 0x207F,  0xB2,  0x25A0,  0xA0
+           ];
+
+rockpool.encodeCp437 = function(string){
+
+    var len = string.length;
+    var buf = []
+
+    for(var x = 0; x < len; x++){
+        var charCode = string.charCodeAt(x);
+
+        if(charCode > 127){
+            if(rockpool.cp437.indexOf(charCode) > -1){
+                charCode = rockpool.cp437.indexOf(charCode) + 128
+            }
+            else
+            {
+                continue;
+            }
+        }
+
+        buf.push(charCode);
+    }
+
+    return new Uint8Array(buf);
+
+}
+
+rockpool.decodeCp437 = function(charArray){
+    if(!(charArray instanceof ArrayBuffer)){return charArray;}
+
+    charArray = new Uint8Array(charArray);
+
+    var len = charArray.length;
+    var buf = "";
+
+    for(var x = 0; x < len; x++){
+        var charCode = charArray[x];
+
+        if(charCode < 128){
+            buf += String.fromCharCode(charCode);
+        }
+        else if(charCode < 256){
+            buf += String.fromCharCode(rockpool.cp437[charCode-128])
+        }
+    }
+
+    return buf;
+}
 
 rockpool.host_picker = $('<div>').addClass('host-picker palette')
     .appendTo('.palettes')
@@ -19,6 +113,7 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
         e.stopPropagation();
 
         if($(this).hasClass('update-needed')){
+            window.open(rockpool.dock_update_url);
             return false;
         }
 
@@ -33,16 +128,25 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
         rockpool.connect(host, rockpool.port, details);
     })
     .on('click','.custom a',function(e){
+        rockpool.host_picker.find('.custom').hide();
         e.preventDefault();
         e.stopPropagation();
         var host = $(this).parent().find('input').val();
         rockpool.stopScan();
-        rockpool.closePrompt();
-        rockpool.connect(host, rockpool.port);
+        rockpool.addScanTarget(host);
+        rockpool.findHosts();
+        //rockpool.closePrompt();
+        //rockpool.connect(host, rockpool.port);
     })
-    .append('<header><h1>' + rockpool.languify('Pick Your Dock') + '</h1></header>')
-    .append('<div class="progress"><strong>' + rockpool.languify('Scanning') + '</strong><span></span></div>')
-    .append('<div class="choices"><div class="custom"><h3>Custom</h3><p>Don\'t see your dock? Enter the IP address of your Flotilla host.</p><input type="text" value="127.0.0.1"><a href="#">Connect<a></div></div>');
+    .on('click','.add-manual',function(e){
+        rockpool.host_picker.find('.custom').show();
+    })
+    .append('<header><h1>' + rockpool.languify('searching for docks') + '</h1></header>')
+    .append('<div class="none-found">no docks found, yet! =(</div>')
+    .append('<div class="choices"></div>')
+    .append('<div class="add-manual">Find a dock manually<i class="add-input"></i></div>')
+    .append('<div style="display:none;" class="custom"><h3>Don\'t see your dock? Enter the IP address of your Flotilla host.</h3><input type="text" value="127.0.0.1"><a href="#">Find<a></div>');
+    //.append('<div class="progress"><strong>' + rockpool.languify('Scanning') + '</strong><span></span></div>')
 
 rockpool.addDaemon = function(host, details){
     if(rockpool.enable_debug){console.log('Adding daemon', host, details);}
@@ -54,7 +158,7 @@ rockpool.addDaemon = function(host, details){
 
     if(daemon.length) return;
 
-    $('<div class="daemon"><h3>' + host + ' (v' + details.daemon_version + ')</h3><p>No docks connected!</p></div>')
+    $('<div class="daemon"><h3 style="display:none;">' + host + ' (v' + details.daemon_version + ')</h3><p>No docks connected!</p></div>')
     .attr({
         'data-host':host
     })
@@ -72,7 +176,7 @@ rockpool.addHost = function(host, details){
         if(h.length) return;
 
         //rockpool.valid_hosts.push(details.dock_serial);
-        h = $('<div><p>' + details.dock_name + '</p><small>' + details.dock_user + '</small></div>')
+        h = $('<div><p>' + details.dock_name + '</p></div>') //<small>' + details.dock_user + '</small></div>')
             .data({
                 'host':host,
                 'details':details
@@ -83,13 +187,28 @@ rockpool.addHost = function(host, details){
             .addClass('host');
 
         if(details.dock_version < rockpool.minimum_dock_version){
-            h.append('<small class="error">Update Needed!</small>');
+            h.append('<small class="error">this dock needs an <em>update</em></small>');
             h.addClass('update-needed');
         }
-        h.append('<small>v' + details.dock_version + '</small>');
+        //h.append('<small>v' + details.dock_version + '</small>');
 
         h.appendTo(daemon);
+
+        rockpool.host_picker.find('.none-found').hide();
     //}
+}
+
+rockpool._discover = false;
+rockpool._discover_retries = 0;
+rockpool._discover_retry_time = 6000;
+rockpool.startDiscovery = function(){
+    rockpool._discover = false;
+    rockpool.discoverHosts();
+
+}
+
+rockpool.stopDiscovery = function(){
+    rockpool._discover = false;
 }
 
 rockpool.discoverHosts = function(){
@@ -172,7 +291,13 @@ rockpool.addScanTarget = function(target, timeout){
             target = host;
         }
     }
+    for(var x = 0; x < rockpool.attempt_list.length; x++){
+        if(rockpool.attempt_list[x].target.equals(target)) {
+            return false;
+        }
+    }
     rockpool.attempt_list.push({target:target, timeout:timeout});
+    return true;
 }
 
 rockpool.addPreviousTargets = function(){
@@ -195,9 +320,12 @@ rockpool.findHosts = function(){
 
     var progress_total = 0;
 
-    rockpool.resetHosts();
+    if(!rockpool._discover){
+        rockpool._discover = true;
+        rockpool.resetHosts();
 
-    rockpool.prompt(rockpool.host_picker, false);
+        rockpool.prompt(rockpool.host_picker, false);
+    }
 
     var history = rockpool.loadConnectionHistory();
     for(var host in history){
@@ -217,21 +345,6 @@ rockpool.findHosts = function(){
         progress_total += (end-start);
 
         spawnWorker(rockpool.attempt_list[x]);
-    }
-
-    function stopOtherScans(subnet){
-        for(var x = 0; x < rockpool.attempt_list.length; x++){
-            if( rockpool.attempt_list[x].target.slice(0,3).join('.') != subnet ){
-
-                var start_end = rockpool.attempt_list[x].target[3];
-                var start     = start_end[0];
-                var end       = start_end[1];
-
-                if(rockpool.debug_enabled) console.log('Terminating redundant range due to subnet ' + rockpool.attempt_list[x].target)
-
-                rockpool.scan_workers[rockpool.attempt_list[x].target].stop(rockpool.scan_workers[rockpool.attempt_list[x].target]);
-            }
-        }
     }
 
     function spawnWorker(attempt_host){
@@ -254,7 +367,6 @@ rockpool.findHosts = function(){
                     var details = msg.data['details'];
                     var successful_subnet = host.split('.').slice(0,3).join('.');
                     rockpool.addHost(host,details);
-                    //stopOtherScans(successful_subnet);
                 }
 
                 if( 'progress' in msg.data ){
@@ -289,7 +401,7 @@ rockpool.findHosts = function(){
         }
     }
 
-    function updateFindHostProgress(){
+   function updateFindHostProgress(){
 
         var progress = 0;
 
@@ -299,18 +411,10 @@ rockpool.findHosts = function(){
             }
         }
 
-        rockpool.host_picker
-            .find('.progress span')
-            .css('width', ((progress/progress_total) * 100) + '%');
-
-        if( progress == progress_total ){
-            rockpool.host_picker.find('strong').html(rockpool.languify('Finished!'));
+        if(progress == 0 && rockpool._discover && rockpool._discover_retries < 4){
+                rockpool._discover_retries += 1;
+                setTimeout(rockpool.discoverHosts,rockpool._discover_retry_time);
         }
-        else
-        {
-            rockpool.host_picker.find('strong').html(rockpool.languify('Searching for Flotilla&hellip;'));
-        }
-
     }
 }
 
@@ -366,6 +470,7 @@ rockpool.connect = function(host, port, details){
     rockpool.prompt(prompt,false);
 
     rockpool.socket = new WebSocket("ws://" + host + ':' + port + "/");
+    rockpool.socket.binaryType = 'arraybuffer';
     rockpool.socket.onopen = function() { 
         if(rockpool.debug_enabled) console.log('Successfully connected to ' + host);
 
@@ -381,7 +486,10 @@ rockpool.connect = function(host, port, details){
         }
         rockpool.closePrompt();
     };
-    rockpool.socket.onmessage = function(event) { rockpool.parseCommand(event.data); return; };
+    rockpool.socket.onmessage = function(event) { 
+        rockpool.parseCommand(rockpool.decodeCp437(event.data)); 
+        return; 
+    };
     rockpool.socket.onerror = function(event) {
         if(rockpool.debug_enabled) console.log('Socket Error',event);
         rockpool.closePrompt();
@@ -462,7 +570,7 @@ rockpool.parseCommand = function(data_in){
 
     switch(command){
         case 'u': // Update
-            var module = rockpool.getModule(host, channel, device);
+            var module = rockpool.getModule(host, channel, device); 
             module.receive(data);
             if( module.active == false ){
                 module.activate();

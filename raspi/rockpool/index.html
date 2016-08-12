@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
         <title>Rockpool - Flotilla</title>
         <link rel="stylesheet" href="css/jquery.fancybox.min.css">
         <link rel="stylesheet" href="css/pure-min.css">
@@ -11,6 +12,7 @@
         <meta name="viewport" content="width = device-width, user-scalable = no, initial-scale = 1.0">
     </head>
     <body>
+        <div class="blackout"></div>
         <div class="main">
             <div class="container">
                 <header class="pure-g">
@@ -52,16 +54,16 @@
         </div>
         <div class="options closed">
             <div class="container">
-                <i class="toggle"><img src="css/images/flotilla-anchor.png" /></i>
+                <i class="toggle icon-flotilla"></i>
                 <div class="icon-palette pure-g">
-                    <div class="active color-navy" data-action="save"><i></i><span>Save</span></div>
-                    <div class="active color-navy" data-action="load"><i></i><span>Load</span></div>
+                    <div class="active color-navy" data-action="load"><i class="icon-peek"></i><span>Load</span></div>
+                    <div class="active color-navy" data-action="save"><i class="icon-poke"></i><span>Save</span></div>
                     <div></div>
-                    <div class="active color-navy" data-action="clear"><i></i><span>Clear</span></div>
+                    <div class="active color-yellow" data-action="dock"><i class="icon-dock"></i><span>Dock</span></div>
+                    <div class="active color-green" data-action="help"><i class="icon-help"></i><span>Help</span></div>
                     <div></div>
-                    <div class="active color-navy" data-action="dock"><i></i><span>Dock</span></div>
                     <div></div>
-                    <div class="active color-navy" data-action="help"><i></i><span>Help</span></div>
+                    <div class="active color-red" data-action="clear"><i class="icon-clear"></i><span>Clear</span></div>
                 </div>
             </div>
         </div>
@@ -69,6 +71,7 @@
 
         <script src="js/lib/jquery-2.1.1.min.js"></script>
         <script src="js/lib/fastclick.js"></script>
+        <script src="js/lib/FileSaver.min.js"></script>
         <script src="js/rockpool.js"></script>
         <script src="js/rockpool.languify.js"></script>
         <script src="js/socket.io.min.js"></script>
@@ -84,21 +87,11 @@
         <script src="js/rockpool.save.js"></script>
         <script src="js/rockpool.variables.js"></script>
         <script src="js/rockpool.find-hosts.worker.js"></script>
-
         <script src="js/lib/jquery.fancybox.min.js"></script>
 
         <script>
             "use strict";
             $(function () {rockpool.initialize()});
-
-            $(function () {
-
-                $('.options .toggle').on('click',function(e){
-
-                    $(this).parents('.options').toggleClass('open');
-                })
-
-            })
         </script>
     </body>
 </html>

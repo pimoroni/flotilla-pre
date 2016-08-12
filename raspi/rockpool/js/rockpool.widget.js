@@ -185,7 +185,7 @@ rockpool.widget =  function( type, rule, key ) {
     }
 
     this.setIcon = function( icon ){
-        this.img.attr('src', icon ? 'css/images/icons/icon-' + icon + '.png' : 'css/images/icon-empty.png');
+        //this.img.attr('src', icon ? 'css/images/icons/icon-' + icon + '.png' : 'css/images/icon-empty.png');
         this.dom.find('i').attr('class','').addClass('icon-' + icon);
         this.dom.find('.icon').append(((this.type != 'converter' && !isNaN(this.handler.channel)) ? ' <span class="channel">' + rockpool.channelToNumber(this.handler.channel) + '</span>' : ''))
     }
@@ -209,7 +209,7 @@ rockpool.widget =  function( type, rule, key ) {
         if( this.isInput() ){
             var raw = Math.round(value*1000).toString();
             if( this.handler.raw ){
-                raw = this.handler.raw(this.options) + '<small>' + raw +  '</small>';
+                raw = this.handler.raw(this.option_index) + '<small>' + raw +  '</small>';
             }
             if( raw != this.last_inspector_value ){
                 this.inspector.html(raw);
@@ -236,6 +236,9 @@ rockpool.widget =  function( type, rule, key ) {
 
         if( this.isOutput() ){
             var raw = Math.round(value*1000).toString();
+            if(this.handler.raw){
+                raw = this.handler.raw(this.option_index, value);
+            }
             if( raw != this.last_inspector_value ){
                 this.inspector.html(raw);
                 this.last_inspector_value = raw;
@@ -396,7 +399,6 @@ rockpool.widget =  function( type, rule, key ) {
 
     var widget = this;
 
-
     this.dom
     .on('click', '.inspector', function(e){
         e.preventDefault();
@@ -406,7 +408,37 @@ rockpool.widget =  function( type, rule, key ) {
     })
     .on('click','i',function(e){
         e.preventDefault();
+
+        if(widget.handler.type == 'module'){
+
+            var module = rockpool.getModule(widget.handler.host, widget.handler.channel);
+
+            if(module.needsConfiguration(type)){
+
+                rockpool.moduleConfigureMenu(widget.dom, type, rule, widget.dom.index() - 2, module);
+
+                return false;
+            }
+        }
+        else
+        {
+
+            var collection = rockpool.inputs;
+            if(type == 'output'){
+                collection = rockpool.outputs;
+            }
+
+            var module = typeof(collection[widget.handler_key]) === "function" ? new collection[widget.handler_key] : collection[widget.handler_key];
+
+            if(module && module.options && module.options.length > 0){
+                rockpool.virtualConfigureMenu(widget.dom, type, rule, widget.handler_key, module);
+                return false;
+            }
+
+        }
+
         rockpool.add(type,rule,widget.dom.index() - 2);
+
 
         /*
         if(widget.hasOptions()){
