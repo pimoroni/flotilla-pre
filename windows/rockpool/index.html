@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Rockpool - Flotilla</title>
+        <link rel="stylesheet" href="css/jquery.fancybox.min.css">
+        <link rel="stylesheet" href="css/pure-min.css">
+        <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="css/rockpool.css">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="viewport" content="width = device-width, user-scalable = no, initial-scale = 1.0">
+    </head>
+    <body>
+        <div class="blackout"></div>
+        <div class="main">
+            <div class="container">
+                <header class="pure-g">
+                    <div class="pure-u-1-5 center"><h2>input</h2></div>
+                    <div class="pure-u-3-5 center"><h2>modify</h2></div>
+                    <div class="pure-u-1-5 center"><h2>output</h2></div>
+                </header>
+                <div id="rules">
+                </div>
+                <footer>
+                    <span class="rulegroup">
+                        <div class="rule pure-g">
+                            <div class="block toggle"></div>
+
+                            <div class="pure-u-1-5 center block input off type-input generators" style="top: 0px;"><i class="add-input"></i>
+                                <div class="active-inputs">
+                                    <ul>
+                                        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="pure-u-1-5 block"></div>
+
+                            <div class="pure-u-1-5 center block converter empty"></div>
+
+                            <div class="pure-u-1-5 block"></div>
+
+                            <div class="pure-u-1-5 center block output none type-output general"><i class="add-output"></i>
+                                <div class="active-outputs">
+                                    <ul>
+                                        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+                                    </ul>
+                                </div></div>
+                        </div>
+                    </span>
+                </footer>
+            </div>
+        </div>
+        <div class="options closed">
+            <div class="container">
+                <i class="toggle icon-flotilla"></i>
+                <div class="icon-palette pure-g">
+                    <div class="active color-navy" data-action="load"><i class="icon-peek"></i><span>Load</span></div>
+                    <div class="active color-navy" data-action="save"><i class="icon-poke"></i><span>Save</span></div>
+                    <div></div>
+                    <div class="active color-yellow" data-action="dock"><i class="icon-dock"></i><span>Dock</span></div>
+                    <div class="active color-green" data-action="help"><i class="icon-help"></i><span>Help</span></div>
+                    <div></div>
+                    <div></div>
+                    <div class="active color-red" data-action="clear"><i class="icon-clear"></i><span>Clear</span></div>
+                </div>
+            </div>
+        </div>
+        <div style="display:none;" class="palettes"></div>
+
+        <script src="js/lib/jquery-2.1.1.min.js"></script>
+        <script src="js/lib/fastclick.js"></script>
+        <script src="js/lib/FileSaver.min.js"></script>
+        <script src="js/rockpool.js"></script>
+        <script src="js/rockpool.languify.js"></script>
+        <script src="js/socket.io.min.js"></script>
+        <script src="js/rockpool.widget.js"></script>
+        <script src="js/rockpool.rule.js"></script>
+        <script src="js/rockpool.inputs.js"></script>
+        <script src="js/rockpool.outputs.js"></script>
+        <script src="js/rockpool.converters.js"></script>
+        <script src="js/rockpool.palette.js"></script>
+        <script src="js/rockpool.module.js"></script>
+        <script src="js/rockpool.modules.js"></script>
+        <script src="js/rockpool.client.js"></script>
+        <script src="js/rockpool.save.js"></script>
+        <script src="js/rockpool.variables.js"></script>
+        <script src="js/rockpool.find-hosts.worker.js"></script>
+        <script src="js/lib/jquery.fancybox.min.js"></script>
+
+        <script>
+            "use strict";
+            $(function () {rockpool.initialize()});
+        </script>
+    </body>
+</html>
