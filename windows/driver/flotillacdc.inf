@@ -1,3 +1,6 @@
+key = USB_VID val = 16D0
+key = USB_PID_CDC val = 08C3
+
 [Version]
 Signature="$Windows NT$"
 Class=Ports
