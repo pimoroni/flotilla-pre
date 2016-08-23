@@ -14,9 +14,9 @@ newline() {
     echo ""
 }
 
-module="mote"
-binary="mote-demo"
-script="mote-demo.py"
+module="flotilla"
+binary="firmware-version"
+script="firmware-version.py"
 
 # check for pyinstaller
 
@@ -49,6 +49,7 @@ fi
 pyinstaller --clean --onefile ./$script
 rm ../firmware/$binary &> /dev/null
 cp ./dist/$binary ../firmware/
-success "$binary binary created in ./firmware/"
+cp ./dist/$binary ./
+success "$binary binary created"
 
 exit 0
