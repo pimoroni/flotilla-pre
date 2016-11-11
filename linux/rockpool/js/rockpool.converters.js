@@ -172,6 +172,7 @@ rockpool.converters = {
         this.color = 'purple'
         this.icon = "min"
         this.childValue = 0
+        this.inheritFormatting = true
         this.convert = function (value) { return (this.childValue < value) ? this.childValue : value }
         this.set     = function (value) { this.childValue = value }
     },
@@ -184,6 +185,7 @@ rockpool.converters = {
         this.color = 'purple'
         this.icon = "max"
         this.childValue = 0
+        this.inheritFormatting = true
         this.convert = function (value) { return (this.childValue > value) ? this.childValue : value }
         this.set     = function (value) { this.childValue = value }
     },
@@ -196,6 +198,7 @@ rockpool.converters = {
         this.color = 'purple'
         this.icon = "diff"
         this.childValue = 0
+        this.inheritFormatting = true
         this.convert = function (value) { return (this.childValue < value) ? value - this.childValue : this.childValue - value }
         this.set     = function (value) { this.childValue = value }
     },
@@ -208,6 +211,7 @@ rockpool.converters = {
         this.color = 'red'
         this.icon = "mix"
         this.childValue = 0
+        this.inheritFormatting = true
         this.convert = function (value, idx) { return (value + this.childValue)/2 }
         this.set     = function (value, idx) { this.childValue = value }
     },
@@ -220,6 +224,7 @@ rockpool.converters = {
         this.color = 'red'
         this.icon = "lt"
         this.childValue = 0
+        this.inheritFormatting = true
         this.convert = function (value) { return ( value < this.childValue ) ? 1 : 0 }
         this.set     = function (value) { this.childValue = value }
     },
@@ -229,6 +234,7 @@ rockpool.converters = {
         this.color = 'red'
         this.icon = "gt"
         this.childValue = 0
+        this.inheritFormatting = true
         this.convert = function (value, idx) { return ( value > this.childValue ) ? 1 : 0 }
         this.set     = function (value, idx) { this.childValue = value }
     },

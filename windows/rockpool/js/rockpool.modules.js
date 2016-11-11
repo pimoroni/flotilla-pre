@@ -85,7 +85,7 @@ rockpool.module_handlers['rainbow'] = {
                 {name: "Green",     channel: 'g', color: 'green'},
                 {name: "Blue",      channel: 'b', color: 'blue'},
                 {name: "Brightness",channel: 'brightness'},
-                {name: "Hue",       channel: 'hue', color: 'purple'}
+                {name: "Colour",    channel: 'hue', color: 'purple'}
             ]
 
             this.set = function(value, id, options){
@@ -268,6 +268,22 @@ rockpool.module_handlers['motion'] = {
                 return this.steer.avg();
             }
 
+        },
+        'drive': function(){
+            this.name = "Drive"
+            this.icon = "motion"
+            this.data = {x:0,y:0,z:0,m_x:0,m_y:0,m_z:0,d:0}
+            this.drive = [];
+            this.get = function(){
+                var val = ((this.data['x'] - 0.5) * 2.5) + 0.5
+                val = Math.max(Math.min(val,1.0),0.0);
+
+                this.drive.push(val);
+                this.drive = this.drive.slice(-4);
+                this.drive.avg = rockpool.helpers.avg;
+                return this.drive.avg();
+            }
+
         }/*,
         'axis': function(){
 
@@ -316,24 +332,79 @@ rockpool.module_handlers['colour'] = {
             this.name = "Colour"
             this.bgColor = rockpool.palette.blue
             this.data = {r:0,g:0,b:0,brightness:0}
-            this.raw = function(options){
+            this.raw = function(option){
+                console.log(option);
 
-                if(!options) return 0;
+                if(!option) return 0;
 
-                return (Math.round(this.data[options.channel] * 255)).toString(16);
+                if(option.channel == 'hue'){
+
+                    var r = this.data.r;
+                    var g = this.data.g;
+                    var b = this.data.b;
+                    
+                    var max = Math.max(r, g, b),
+                        min = Math.min(r, g, b),
+                    h, s, l = (max + min) / 2;
+
+                    if (max === min) {
+                        h = s = 0; // achromatic
+                    } else {
+                        var d = max - min;
+                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                        switch (max) {
+                            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                            case g: h = (b - r) / d + 2; break;
+                            case b: h = (r - g) / d + 4; break;
+                        }
+                        h /= 6;
+                    }
+
+                    return Math.round(h * 360);
+
+                }
+
+                return (Math.round(this.data[option.channel] * 255)).toString(16);
 
             }
             this.options = [
                 {name:'Red', channel:'r', color: 'red'},
                 {name:'Green', channel:'g', color: 'green'},
                 {name:'Blue', channel:'b', color: 'blue'},
+                {name:'Colour', channel:'hue', color: 'purple'},
                 {name:'Brightness', channel:'brightness', color: 'yellow'}
             ]
-            this.get = function(options){
+            this.get = function(option){
 
-                if(!options) return 0;
+                if(!option) return 0;
 
-                return this.data[options.channel]
+                if(option.channel == 'hue'){
+
+                    var r = this.data.r;
+                    var g = this.data.g;
+                    var b = this.data.b;
+                    
+                    var max = Math.max(r, g, b),
+                        min = Math.min(r, g, b),
+                    h, s, l = (max + min) / 2;
+
+                    if (max === min) {
+                        h = s = 0; // achromatic
+                    } else {
+                        var d = max - min;
+                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                        switch (max) {
+                            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                            case g: h = (b - r) / d + 2; break;
+                            case b: h = (r - g) / d + 4; break;
+                        }
+                        h /= 6;
+                    }
+
+                    return h;
+                }
+
+                return this.data[option.channel]
 
             }
         }
@@ -355,11 +426,9 @@ rockpool.module_handlers['weather'] = {
             this.options = [
                 {name: "Temperature",  highest: 50,  lowest: -50},
             ]
-            this.convertRaw = function(value){
-                return ((value - 0.5) * 10).toFixed(2) + 'c';
-            }
-            this.raw = function(){
-                return (this.data.temperature / 100.00).toFixed(2) + 'c';
+            this.raw = function(option, value){
+                var v = Math.round((value - 0.5) * 1000) / 10
+                return (v).toFixed(1) + 'c';
             }
             this.get = function(options){
 
@@ -558,15 +627,15 @@ rockpool.module_handlers['number'] = {
     },
 	'outputs': {
 		'number': function() {
-            this.raw = function(option_index, value){
-                if( this.options[option_index].raw ){
-                    return this.options[option_index].raw(value, this);
+            this.raw = function(option, value){
+                if( option && option.raw ){
+                    return option.raw(value, this);
                 }
 
                 return this.data.number;
             },
 			this.name = "Number"
-			this.data = {number:"0000", brightness:50, colon: 0, apostrophe: 0, period: [0,0,0,0]}
+			this.data = {number:"0000", brightness:80, colon: 0, apostrophe: 0, period: [0,0,0,0]}
 
             this.options = [
                 {name: 'Number', fn: function(value,t){
@@ -574,7 +643,8 @@ rockpool.module_handlers['number'] = {
                     t.data.period = [0,0,0,0];
                     t.data.number = t.pad( Math.ceil(value * 1000).toString(), 4 );
                 }},
-                {name: 'Temperature', raw: function(value, t){
+                {name: 'Temperature', 
+                raw: function(value, t){
 
                     var temp = Math.round((value - 0.5) * 1000) / 10;
 
@@ -586,7 +656,8 @@ rockpool.module_handlers['number'] = {
 
                     return temp + "c";
 
-                },fn: function(value,t){
+                },
+                fn: function(value,t){
 
                     var temp = Math.round((value - 0.5) * 1000) / 10;
 

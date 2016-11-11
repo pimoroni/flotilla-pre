@@ -139,12 +139,14 @@ rockpool.host_picker = $('<div>').addClass('host-picker palette')
         //rockpool.connect(host, rockpool.port);
     })
     .on('click','.add-manual',function(e){
-        rockpool.host_picker.find('.custom').show();
+        e.preventDefault();
+        e.stopPropagation();
+        rockpool.host_picker.find('.custom').toggle();
     })
     .append('<header><h1>' + rockpool.languify('searching for docks') + '</h1></header>')
     .append('<div class="none-found">no docks found, yet! =(</div>')
     .append('<div class="choices"></div>')
-    .append('<div class="add-manual">Find a dock manually<i class="add-input"></i></div>')
+    .append('<div class="add-manual"><span>Find a dock manually</span><i class="add-input"></i></div>')
     .append('<div style="display:none;" class="custom"><h3>Don\'t see your dock? Enter the IP address of your Flotilla host.</h3><input type="text" value="127.0.0.1"><a href="#">Find<a></div>');
     //.append('<div class="progress"><strong>' + rockpool.languify('Scanning') + '</strong><span></span></div>')
 
@@ -158,7 +160,7 @@ rockpool.addDaemon = function(host, details){
 
     if(daemon.length) return;
 
-    $('<div class="daemon"><h3 style="display:none;">' + host + ' (v' + details.daemon_version + ')</h3><p>No docks connected!</p></div>')
+    $('<div class="daemon"></div>')
     .attr({
         'data-host':host
     })
@@ -169,14 +171,18 @@ rockpool.addHost = function(host, details){
     if(rockpool.enable_debug){console.log('Adding valid host', host, details);}
 
         var daemon = rockpool.host_picker.find('.daemon').filter('[data-host="' + host + '"]');
-        daemon.find('> p').hide();
 
         var h = daemon.find('.host').filter('[data-serial="' + details.dock_serial + '"]');
 
         if(h.length) return;
 
         //rockpool.valid_hosts.push(details.dock_serial);
-        h = $('<div><p>' + details.dock_name + '</p></div>') //<small>' + details.dock_user + '</small></div>')
+        var name = "&nbsp;";
+        if (details.dock_name != "Unnamed") {
+            name = details.dock_name;
+        }
+
+        h = $('<div><p>' + name + '</p></div>')
             .data({
                 'host':host,
                 'details':details
@@ -209,6 +215,7 @@ rockpool.startDiscovery = function(){
 
 rockpool.stopDiscovery = function(){
     rockpool._discover = false;
+    clearTimeout(rockpool._discover_timeout);
 }
 
 rockpool.discoverHosts = function(){
@@ -292,7 +299,9 @@ rockpool.addScanTarget = function(target, timeout){
         }
     }
     for(var x = 0; x < rockpool.attempt_list.length; x++){
-        if(rockpool.attempt_list[x].target.equals(target)) {
+        var compare = rockpool.attempt_list[x].target;
+        if( compare === target 
+        || (typeof(compare.equals) === "function" && rockpool.attempt_list[x].target.equals(target))) {
             return false;
         }
     }
@@ -412,8 +421,8 @@ rockpool.findHosts = function(){
         }
 
         if(progress == 0 && rockpool._discover && rockpool._discover_retries < 4){
-                rockpool._discover_retries += 1;
-                setTimeout(rockpool.discoverHosts,rockpool._discover_retry_time);
+            rockpool._discover_retries += 1;
+            rockpool._discover_timeout = setTimeout(rockpool.discoverHosts,rockpool._discover_retry_time);
         }
     }
 }
@@ -459,6 +468,7 @@ rockpool.disconnect = function(){
 
 rockpool.connect = function(host, port, details){
 
+    rockpool.stopDiscovery();
     rockpool.disconnect(host);
 
     if(rockpool.debug_enabled) console.log('Connected', details);
@@ -479,7 +489,14 @@ rockpool.connect = function(host, port, details){
 
         rockpool.subscribed_to = details.dock_index;
 
+        rockpool.dock_version = details.dock_version;
+        rockpool.dock_user = details.dock_user;
+        rockpool.dock_name = details.dock_name;
+        rockpool.dock_serial = details.dock_serial;
+
         rockpool.addToConnectionHistory(host);
+
+        rockpool.enumerateHost(0);
 
         if(typeof(rockpool.on_connect) === "function"){
             rockpool.on_connect();
@@ -498,6 +515,12 @@ rockpool.connect = function(host, port, details){
     rockpool.run();
 }
 
+rockpool.enumerateHost = function(host){
+
+    rockpool.sendHostCommand(host,'e');
+
+}
+
 rockpool.sendHostUpdate = function(host, channel, code, data){
 
     var packet = ['s', channel, data.join(',')].join(' ');
@@ -513,6 +536,21 @@ rockpool.sendHostUpdate = function(host, channel, code, data){
 
 }
 
+rockpool.sendHostCommand = function(host, cmd){
+
+    var packet = 'dock:' + host + ' data:' + cmd + '\r';
+    if( rockpool.isConnected() ){
+        if(rockpool.debug_enabled) console.log('Sending packet:', packet);
+        packet = rockpool.encodeCp437(packet);
+        rockpool.socket.send(packet.buffer);
+    }
+    else
+    {
+        if(rockpool.debug_enabled) console.log('Unable to send ( No connection to host ):', packet)
+    }
+
+}
+
 rockpool.addressLookup = function(module_addr){
     for( var module_name in rockpool.module_handlers ){
         if(module_addr = rockpool.module_handlers[module_name].address){
@@ -520,6 +558,28 @@ rockpool.addressLookup = function(module_addr){
         }
     }
     return -1;
+}
+
+rockpool.setDockName = function(host, name){
+    name = name.substring(0,8);
+
+    if(rockpool.dock_name != name){
+
+        rockpool.sendHostCommand(host, "n d " + name);
+        rockpool.dock_name = name;
+
+    }
+}
+
+rockpool.setDockUser = function(host, user){
+    user = user.substring(0,8);
+
+    if(rockpool.dock_user != user){
+
+        rockpool.sendHostCommand(host, "n u " + user);
+        rockpool.dock_user = user;
+
+    }
 }
 
 rockpool.parseCommand = function(data_in){
