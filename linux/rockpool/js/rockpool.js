@@ -6,6 +6,7 @@ rockpool.guid = 0;
 rockpool.last_time = 0;
 rockpool.tick_length = 100; // 100ms per tick
 rockpool.debug_enabled = false;
+rockpool.enable_advanced = false;
 
 rockpool.palette = {
     red: '#D94D15',
@@ -277,21 +278,32 @@ rockpool.getModule = function(host_idx, channel_idx, module_code) {
 rockpool.initialize = function(){
     $(window).trigger('resize');
 
-    $('.add-input').on('click',function(){
-        rockpool.add('input')
-    }).find('h2');
+    $('.controls')
+        .on('click','.add-rule',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            new rockpool.rule().start();
+        });
+        /*.on('click','.add-input',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            rockpool.add('input')
+        })
+        .on('click','.add-output',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            rockpool.add('output')
+        })
+        .on('click','.add-conveter',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            rockpool.add('converter')
+        });*/
 
-    $('.add-output').on('click',function(){
-        rockpool.add('output')
-    }).find('h2');
 
-    $('.add-converter').on('click',function(){
-        rockpool.add('converter')
-    }).find('h2');
-
-
-    $('.options').on('click','.active',function(e){
+    $('.options,.mainnav').on('click','.active',function(e){
         e.preventDefault();
+        e.stopPropagation();
 
         var action = $(this).data('action');
 
@@ -303,14 +315,23 @@ rockpool.initialize = function(){
                 new rockpool.rule().start();
                 break;
             case 'clear':
-                rockpool.clear();
+                var dom_container = $('<div class="confirm palette"><i class="close"></i><header><h1>are you sure?</h1></header><div class="choices"><p>this will delete all your rules!</p></div>');
+    
+                $('<i class="cancel"></i>').appendTo(dom_container.find('.choices'));
+                $('<i class="confirm"></i>').appendTo(dom_container.find('.choices')).on('click',function(){
+                    rockpool.clear();
+                });
+
+                rockpool.prompt(dom_container);
+                //rockpool.clear();
                 break;
             case 'load':
                 rockpool.loadDialog();
                 break;
             case 'dock':
+                rockpool.personalise(rockpool.subscribed_to);
                 //rockpool.manageDock();
-                rockpool.startDiscovery();
+                //rockpool.startDiscovery();
                 break;
             case 'save':
                 rockpool.saveDialog();
@@ -321,7 +342,7 @@ rockpool.initialize = function(){
         $(this).parents('.options').toggleClass('open');
     });
 
-    $('.options .toggle').on('click',function(e){
+    /*$('.options .toggle').on('click',function(e){
         e.preventDefault();
         e.stopPropagation();
 
@@ -334,7 +355,7 @@ rockpool.initialize = function(){
         {
             $(this).parents('.options').find('.icon-palette div').filter('[data-action="load"]').attr("class","disabled color-gray");
         }
-    });
+    });*/
 
     /* resize chart canvases when the window resizes */
     $(window).resize(function () {

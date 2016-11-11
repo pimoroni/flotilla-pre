@@ -173,11 +173,12 @@ rockpool.widget =  function( type, rule, key ) {
 
     this.setLabel = function( label ){
         if( (this.isConverter() && this.handler.name == 'Empty') || (this.isOutput() && this.handler.name == 'None') ){
-            this.dom.find('.name').hide();
+            //this.dom.find('.name').hide();
+            this.dom.find('.name').html('');
             return;
         }
         var channel = typeof(this.handler.channel) !== 'undefined' ? ' <span>' + rockpool.channelToNumber(this.handler.channel) + '</span>' : '';
-        this.dom.find('.name').show().html( rockpool.languify(label) + channel )
+        this.dom.find('.name').html( rockpool.languify(label) + channel )
     }
 
     this.setSubType = function( subtype ){
@@ -204,13 +205,10 @@ rockpool.widget =  function( type, rule, key ) {
     this.get = function(){
         var value = this.handler.get ? this.handler.get(this.options) : 0
         this.history.push(value)
-        this.history = this.history.slice(-200)
+        this.history = this.history.slice(-this.history_length)
 
         if( this.isInput() ){
-            var raw = Math.round(value*1000).toString();
-            if( this.handler.raw ){
-                raw = this.handler.raw(this.option_index) + '<small>' + raw +  '</small>';
-            }
+            var raw = this.getFormattedValue(value)
             if( raw != this.last_inspector_value ){
                 this.inspector.html(raw);
                 this.last_inspector_value = raw;
@@ -220,11 +218,23 @@ rockpool.widget =  function( type, rule, key ) {
         return value
     }
 
+    this.getFormattedValue = function(value) {
+        if(this.inheritFromModule && (!this.handler.raw || this.handler_key == "state" )){
+            return this.inheritFromModule.getFormattedValue(value);
+        }
+
+        var raw = Math.round(value*1000).toString();
+        if(this.handler.raw){
+            return this.handler.raw(this.options, value) + '<small>' + raw + '</small>';
+        }
+        return raw;
+    }
+
     this.convert = function(value){
 
-        var output =  this.handler.convert ? this.handler.convert(value) : 0
+        var output = this.handler.convert ? this.handler.convert(value) : 0
         this.history.push(output)
-        this.history = this.history.slice(-200)
+        this.history = this.history.slice(-this.history_length)
 
         return output
     }
@@ -235,10 +245,11 @@ rockpool.widget =  function( type, rule, key ) {
         }
 
         if( this.isOutput() ){
-            var raw = Math.round(value*1000).toString();
-            if(this.handler.raw){
-                raw = this.handler.raw(this.option_index, value);
+            var raw = this.getFormattedValue(value);
+            if(this.inheritFromModule){
+                raw = this.inheritFromModule.getFormattedValue(value);
             }
+
             if( raw != this.last_inspector_value ){
                 this.inspector.html(raw);
                 this.last_inspector_value = raw;
@@ -272,15 +283,49 @@ rockpool.widget =  function( type, rule, key ) {
         this.updateCanvas();
     }
 
+    this.drawChartLine  = function(width, height, context, values) {
+        var dotSpacing = width / values.length;
+
+        var max = Math.round((width) / dotSpacing) + 1;
+        var points = [];
+
+        for(var i = 0; i < max; i++) {
+            var value = values[values.length - 1 - i] * (height - (this.verticalMargin*2));
+
+            points.unshift({
+                x: width  - ( i * dotSpacing ),
+                y: height - ( value ) - this.verticalMargin
+            })
+        }
+
+        for (i = 0; i < points.length; i ++){
+            context.beginPath();
+            context.moveTo(0, points[i].y);
+            context.lineTo(width, points[i].y);
+            if(i == points.length - 1){
+                context.globalAlpha = 1.0;
+            }
+            else
+            {
+                context.globalAlpha = ((0.4/points.length) * i);
+            }
+            context.stroke();
+        }
+
+
+    }
+
     this.drawChartLines = function(width, height, context, values) {
-        var max = Math.round((width) / this.dotSpacing) + 1;
+        var dotSpacing = width / values.length;
+
+        var max = Math.round((width) / dotSpacing) + 1;
         var points = [];
 
         for(var i = 0; i < max; i++) {
             var value = values[values.length - 1 - i] * (height - (this.verticalMargin*2));
 
             points.push({
-                x: width  - ( i * this.dotSpacing ),
+                x: width  - ( i * dotSpacing ),
                 y: height - ( value ) - this.verticalMargin
             })
         }
@@ -289,6 +334,39 @@ rockpool.widget =  function( type, rule, key ) {
         context.moveTo(points[0].x, points[0].y);
         for (i = 1; i < points.length; i ++){context.lineTo(points[i].x, points[i].y);}
         context.stroke();
+    }
+
+    this.drawChartHybrid = function(width, height, context, values) {
+
+        var dotSpacing = width / values.length;
+
+        var max = Math.round((width) / dotSpacing) + 1;
+        var points = [];
+
+        for(var i = 0; i < max; i++) {
+            var value = values[values.length - 1 - i] * (height - (this.verticalMargin*2));
+
+            points.push({
+                x: width  - ( i * dotSpacing ),
+                y: height - ( value ) - this.verticalMargin
+            })
+        }
+
+
+        context.globalAlpha = 0.2;
+
+        context.beginPath(); 
+        context.moveTo(points[0].x, points[0].y);
+        for (i = 1; i < points.length; i ++){context.lineTo(points[i].x, points[i].y);}
+        context.stroke();
+
+        context.globalAlpha = 1.0;
+
+        context.beginPath();
+        context.moveTo(0, points[0].y);
+        context.lineTo(width, points[0].y);
+        context.stroke();
+
     }
 
     this.drawChart = function(){
@@ -301,6 +379,7 @@ rockpool.widget =  function( type, rule, key ) {
 
             var context = canvas.getContext('2d');
 
+            context.globalAlpha = 1.0;
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             if( this.type != 'input' && this.handler.name == 'Empty' ){
@@ -309,13 +388,13 @@ rockpool.widget =  function( type, rule, key ) {
                 return false;
             }
 
-            this.drawChartLines(canvas.width, canvas.height, context, values);
+            this.drawChartLine(canvas.width, canvas.height, context, values);
 
             /*
             This blends the right-hand edge of the graph into the pipe so it doesn't
             end abruptly on converters. It looks nice, but it probably doesn't do much
             for performance. Remove, or add conditional logic, to optimise.
-                */
+            */
             context.save();
             context.globalCompositeOperation = "destination-in"
             gradient = context.createLinearGradient(0, 0, canvas.width, 0)
@@ -355,6 +434,8 @@ rockpool.widget =  function( type, rule, key ) {
         }
     }
 
+    this.history_length = 10;
+
     this.option_index = -1;
     this.last_inspector_value = 0;
 
@@ -371,7 +452,7 @@ rockpool.widget =  function( type, rule, key ) {
     this.history = [];
 
     this.rightMargin    = 22; // was 50
-    this.dotSpacing     = 3; // was 14
+    //this.dotSpacing     = 3; // was 14
     this.verticalMargin = 2;
     this.dotRadius      = 4; // Was 5
 
@@ -391,7 +472,7 @@ rockpool.widget =  function( type, rule, key ) {
         this.updateCanvas();
     }
 
-    this.img = $('<img src="css/images/icon-empty.png">').appendTo(this.icon);
+    //this.img = $('<img src="css/images/icon-empty.png">').appendTo(this.icon);
 
     $('<div class="name">').appendTo(this.icon);
 
@@ -409,13 +490,32 @@ rockpool.widget =  function( type, rule, key ) {
     .on('click','i',function(e){
         e.preventDefault();
 
+        var dom_index = widget.dom.index() - 2;
+
+        if(type == 'converter'){
+
+            if(widget.handler_key == 'noop'){
+                rockpool.add('converter',rule,dom_index);
+            }
+            else
+            {
+                rockpool.converterConfigureMenu(widget.dom,rule,dom_index);
+            }
+
+            return false;
+        }
+
+        // Inputs / Outputs
+
         if(widget.handler.type == 'module'){
 
-            var module = rockpool.getModule(widget.handler.host, widget.handler.channel);
+            var code = widget.handler_key.split('_')[2];
+
+            var module = rockpool.getModule(widget.handler.host, widget.handler.channel, code);
 
             if(module.needsConfiguration(type)){
 
-                rockpool.moduleConfigureMenu(widget.dom, type, rule, widget.dom.index() - 2, module);
+                rockpool.moduleConfigureMenu(widget.dom, type, rule, dom_index, module);
 
                 return false;
             }
@@ -437,7 +537,7 @@ rockpool.widget =  function( type, rule, key ) {
 
         }
 
-        rockpool.add(type,rule,widget.dom.index() - 2);
+        rockpool.add(type,rule,dom_index);
 
 
         /*

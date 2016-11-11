@@ -35,8 +35,8 @@ rockpool.inputs = {
             this.options[option].value = parseFloat(value);
         }
 
-        this.raw = function(option){
-            return Math.round(this.options[option].value*100) + '%';
+        this.raw = function(option, value){
+            return (Math.round(value*100)) + '%';
         }
 
         this.getValue = function(option){
@@ -52,6 +52,7 @@ rockpool.inputs = {
         this.sindex = 0;
         this.icon = "clock"
         this.color = "navy"
+        this.advanced = true
 
         this.options = [
             {name:'Seconds'},
@@ -84,35 +85,48 @@ rockpool.inputs = {
         this.sindex = 0;
         this.icon = "random"
         this.color = "navy"
-        this.tick = 0;
+
         this.value = 0;
+        this.lastSin = 0;
 
         this.options = [
-            {name:'Slow', speed:15},
-            {name:'Medium', speed:10},
-            {name:'Fast', speed:5},
-            //{name:'Custom', speed:5, ui:'slider'}
+            {name:'Slow', frequency:0.06},
+            {name:'Medium', frequency:0.12},
+            {name:'Fast', frequency:0.24},
+            {name:'Custom', frequency:0.12, ui:'slider'}
         ];
 
+        this.frequency = 0;
+        this.phase = 0.0;
+
         this.getValue = function(option){
-            return 1.0 - (this.options[option].speed / 100.0);
+            return this.options[option].frequency;
         }
 
         this.setValue = function(option,value){
-            this.options[option].speed = 100 - (parseFloat(value) * 100);
+            this.options[option].frequency = parseFloat(value);
         }
 
         this.get = function(options){
 
-            var speed = ( options && options.speed ) ? options.speed : this.options[0].speed;
+            var time = rockpool.time;
 
+            var frequency = ( options && options.frequency ) ? options.frequency : this.options[0].frequency;
 
-            if(this.tick == 0){
-                this.value = Math.random();
+            if(frequency != this.frequency){
+                var c = (time * this.frequency + this.phase) % (2.0 * Math.PI);
+                var n = (time * frequency) % (2.0 * Math.PI);
+
+                this.phase = c - n;
+                this.frequency = frequency;
             }
 
-            this.tick++;
-            this.tick%=speed;
+            var sin = ((Math.sin(time * this.frequency + this.phase) + 1.0) / 2.0);
+
+            if (sin > 0.5 && this.lastSin <= 0.5 || sin <= 0.5 && this.lastSin > 0.5) {
+                this.value = Math.random();
+                this.lastSin = sin;
+            }
 
             return this.value;
 
@@ -124,13 +138,11 @@ rockpool.inputs = {
         this.icon = "sine"
         this.color = "navy"
 
-        this.frequency = 0;
-
         this.options = [
-            {name:'Slow', frequency:0.01},
-            {name:'Medium', frequency:0.5},
-            {name:'Fast', frequency:1.0},
-            //{name:'Custom', frequency:9.0, ui:'slider'}
+            {name:'Slow', frequency:0.06},
+            {name:'Medium', frequency:0.12},
+            {name:'Fast', frequency:0.24},
+            {name:'Custom', frequency:0.12, ui:'slider'}
         ];
 
         this.frequency = 0;
@@ -169,25 +181,38 @@ rockpool.inputs = {
         this.color = "navy"
 
         this.options = [
-            {name:'Slow', speed:1.0},
-            {name:'Medium', speed:5.0},
-            {name:'Fast', speed:9.0},
-            //{name:'Custom', speed:9.0, ui:'slider'}
+            {name:'Slow', frequency:0.06},
+            {name:'Medium', frequency:0.12},
+            {name:'Fast', frequency:0.24},
+            {name:'Custom', frequency:0.12, ui:'slider'}
         ];
 
+        this.frequency = 0;
+        this.phase = 0.0;
+
         this.getValue = function(option){
-            return this.options[option].speed / 30.0
+            return this.options[option].frequency;
         }
 
         this.setValue = function(option,value){
-            this.options[option].speed = parseFloat(value) * 30;
+            this.options[option].frequency = parseFloat(value);
         }
 
         this.get = function(options){
 
-            var speed = ( options && options.speed ) ? options.speed : this.options[0].speed;
+            var time = rockpool.time;
 
-            return Math.round(rockpool.time/(90/speed)) % 2;
+            var frequency = ( options && options.frequency ) ? options.frequency : this.options[0].frequency;
+
+            if(frequency != this.frequency){
+                var c = (time * this.frequency + this.phase) % (2.0 * Math.PI);
+                var n = (time * frequency) % (2.0 * Math.PI);
+
+                this.phase = c - n;
+                this.frequency = frequency;
+            }
+
+            return ((Math.sin(time * this.frequency + this.phase) + 1.0) / 2.0) > 0.5 ? 1.0 : 0.0;
 
         }
     }

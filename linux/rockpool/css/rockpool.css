@@ -1,5 +1,3 @@
-@import "structure.css";
-
 body {
     background-color:#132240;
 }
@@ -11,6 +9,30 @@ body {
 
 #rules {
     padding-bottom:20px;
+}
+
+.mainnav ul {
+    font-size:0;
+}
+
+.mainnav ul, .mainnav li {
+    margin:0;
+    padding:0;
+    list-style:none;
+    display:inline-block;
+}
+
+.mainnav li {
+    margin:2px 0 2px 2px;
+    font-size:14px;
+    padding:10px;
+    color:#FFF;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+.mainnav .pull-right {
+    float:right;
 }
 
 @font-face {
@@ -293,6 +315,7 @@ i .name span {
     line-height:17px;
     font-size: 13px;
     font-weight: 700;
+    display:none;
 }
 
 .inspector small {
@@ -669,14 +692,14 @@ i .name span {
     padding-left:10px;
 }
 
-.save-load .add {
+.save-load .add, .personalise .dockSubmit {
     position: absolute;
     left: 50%;
     bottom:-36px;
     margin-left: -36px;
     background-color:#00AB9B;
 }
-.save-load input {
+.save-load input, .personalise input {
     width: 480px;
     height: 50px;
     line-height: 50px;
@@ -689,7 +712,7 @@ i .name span {
     display: block;
     margin-bottom: 30px;
 }
-.save-load p {
+.save-load p, .personalise p {
     color:#00B0D2;
     text-align:center;
     margin-top:0;
@@ -718,14 +741,19 @@ i .name span {
 
 
 .palette.host-picker, 
-.palette.save-load {
+.palette.save-load,
+.palette.personalise {
     border-radius:20px;
     background:#00B0D2;
 }
-.palette.save-load {
+.palette.save-load,
+.palette.personalise {
     border-radius:20px;
     background:#224280;
     margin-bottom:36px;
+}
+.palette.personalise {
+    padding-bottom:30px;
 }
 .palette.save-load li {
     position:relative;
@@ -1011,6 +1039,30 @@ body .above.active.selected i:before {
     font-weight:300;
     text-transform: lowercase;
     font-size:16px;
+}
+.popup li.button {
+    border-radius:10px;
+    position:relative;
+}
+
+.popup li.button:before {
+    width: 100%;
+    height: 100%;
+    content: '';
+    display: block;
+    background: #FFF;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+    margin: 0;
+
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+13,ffffff+100&0+1,1+13,0+100 */
+background: -moz-linear-gradient(top,  rgba(255,255,255,0) 1%, rgba(255,255,255,0.5) 13%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.5) 13%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.5) 13%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
+
 }
 .above .popup li {
     margin-top:0;
@@ -1354,35 +1406,35 @@ body .above.active.selected i:before {
 ############################################ Colours ############################################
 */
 
-.color-navy i, .color-navy li {
+.color-navy i, .color-navy li, .mainnav .color-navy {
     background-color:#4566AD;
 }
 
-.color-yellow i, .color-yellow li {
+.color-yellow i, .color-yellow li, .mainnav .color-yellow {
     background-color:#F1C304;
 }
 
-.color-orange i, .color-orange li {
+.color-orange i, .color-orange li, .mainnav .color-orange {
     background-color:#DB9800; /* TBC */
 }
 
-.color-blue i, .color-blue li {
+.color-blue i, .color-blue li, .mainnav .color-blue {
     background-color:#00B0B2;
 }
 
-.color-green i, .color-green li {
+.color-green i, .color-green li, .mainnav .color-green {
     background-color:#02B186; /* TBC */
 }
 
-.color-red i, .color-red li {
+.color-red i, .color-red li, .mainnav .color-red {
     background-color:#ED1558;
 }
 
-.color-purple i, .color-purple li {
+.color-purple i, .color-purple li, .mainnav .color-purple {
     background-color:#9879D3;
 }
 
-.color-grey i, .color-grey li {
+.color-grey i, .color-grey li, .mainnav .color-grey {
     background-color:#787980;
 }
 
@@ -1410,7 +1462,7 @@ body .above.active.selected i:before {
 .color-grey.block .popup:before {border-right-color:#787980;border-left-color:#787980;}
 
 #rules .block.output .popup:before {border-right-color:transparent;}
-#rules .block.input .popup:before {border-left-color:transparent;}
+#rules .block.input .popup:before, #rules .block.converter .popup:before {border-left-color:transparent;}
 
 .color-navy.active.selected i:before {border-bottom-color:#4566AD;}
 .color-purple.active.selected i:before {border-bottom-color:#9879D3;}
