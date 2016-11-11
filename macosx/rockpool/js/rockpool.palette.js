@@ -1,7 +1,7 @@
 var rockpool = rockpool || {};
 
 rockpool.prompt = function(content, close_on_click){
-    if( close_on_click = null || typeof( close_on_click ) === 'undefined' ){
+    if( close_on_click == null || typeof( close_on_click ) === 'undefined' ){
         close_on_click = true;
     }
     $.fancybox.open({
@@ -19,11 +19,12 @@ rockpool.prompt = function(content, close_on_click){
         }
         //helpers     : {overlay : {locked : false}}
     });
-    $('.fancybox-overlay,.fancybox-wrap').on('click','.close', function(){ $.fancybox.close(); });
-    $('.fancybox-overlay,.fancybox-wrap').on('click', function(){
+    $('.palette').on('click','.close', function(){ $.fancybox.close(); });
+    $('body').on('click', function(){
 
         if( close_on_click ){
             $.fancybox.close();
+            $('body').off('click');
         }
 
     })
@@ -53,7 +54,7 @@ rockpool.refreshConnectedModules = function(obj, type){
         }
     }
 
-    $('.active-' + type + 's li').removeClass('on');
+    //$('.active-' + type + 's li').removeClass('on');
 
     for(channel_index = 0; channel_index<8; channel_index++){
         var module = rockpool.getActiveModule(dock_id, channel_index);
@@ -85,8 +86,7 @@ rockpool.refreshConnectedModules = function(obj, type){
                 dom_module
                     .attr('class','color-' + module.color + ' active');
                     
-                $('.active-' + type + 's').find(' li:eq(' + channel_index + ')').addClass('on');
-
+                //$('.active-' + type + 's').find(' li:eq(' + channel_index + ')').addClass('on');
             }
         }
     }
@@ -114,6 +114,8 @@ rockpool.refreshVirtualModules = function(obj, type){
 
         if(typeof(item) === "function") item = new item;
 
+
+        if(item.advanced && !rockpool.enable_advanced) continue;
 
         var dom_item = $('<div><i><img></i><span>')
             .data({
@@ -143,6 +145,7 @@ rockpool.refreshConverters = function(obj){
     var last_color = null;
 
     for(key in rockpool.converters){
+        if(key == "noop") continue;
 
         var converter = typeof(rockpool.converters[key]) === "function" ? new rockpool.converters[key] : rockpool.converters[key];
 
@@ -268,12 +271,57 @@ rockpool.add = function(type, rule, index){
             rule = rule instanceof rockpool.rule ? rule : new rockpool.rule();
             rule.start();
             var io_key =  type == 'input' ? module.firstInput().key : module.firstOutput().key;
+
             rule.setHandler(type,[module.key,io_key].join('_'));
             rockpool.closePrompt();
         }
     });
 
-    rockpool.prompt(dom_palette, false);
+    rockpool.prompt(dom_palette, true);
+}
+
+rockpool.converterConfigureMenu = function(target, rule, widget_index){
+    var dom_popup = target.find('.popup.converter-config');
+
+    var popup_close = function(){
+        dom_popup.hide();
+        target.removeClass('selected');
+        $('body').off('click').removeClass('blackedout');
+    }
+
+
+    if(dom_popup.length == 0){
+
+        var dom_popup = $('<div><ul>').addClass('popup converter-config').addClass(key).appendTo(target);
+
+        var dom_menu = dom_popup.find('ul');
+
+        $('<li>').text('change').addClass('change button').appendTo(dom_menu);
+        $('<li>').text('remove').addClass('remove button').appendTo(dom_menu);
+
+        dom_popup
+        .on('click','.remove',function(e){
+            e.stopPropagation();
+            popup_close();
+            rule.setHandler(widget_index,'noop');
+        })
+        .on('click','.change',function(e){
+            e.stopPropagation();
+            popup_close();
+            rockpool.add('converter',rule,widget_index);
+        });
+    }
+
+    $('.popup').hide();
+
+    dom_popup.css('display','inline-block');
+
+    target.addClass('selected');
+
+    $('body').addClass('blackedout').on('click',function(){
+        popup_close();
+    });
+  
 }
 
 rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
@@ -305,7 +353,7 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
                 if(type == 'input'){
                     var percent = NaN;
 
-                    if(rule){
+                    if(rule && rule.getInput().handler.options[idx]){
                         percent = rule.getInput().handler.options[idx].value;
                     }
                     
@@ -346,12 +394,18 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
         var percent = Math.max(Math.min((offset_center * slider_overscale) + 0.5,1.0),0.0);
 
         var idx = parseInt($(obj).data('idx'));
-        $(obj).data('value',Math.round(percent*100.0) / 100.0);
+        $(obj).data('value',Math.round(percent*1000.0) / 1000.0);
 
         $(obj).find('div').css({width:Math.round(percent*100.0) + '%'});
-        $(obj).find('strong').text(Math.round(percent*100.0) + '%');
 
-        rule.getInput().handler.options[idx].value = percent;
+        var text = Math.round(percent*100.0) + '%';
+
+        if(rule){
+            text = rule.getInput().getFormattedValue(percent).split('<small>')[0];
+            rule.getInput().handler.options[idx].value = percent;
+        }
+
+        $(obj).find('strong').html(text);
     }
 
     var slider = dom_popup.find('.slider');
@@ -366,12 +420,26 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
         tick.appendTo(slider);
     }
 
+    var popup_close = function(){
+        dom_popup.hide();
+        target.removeClass('selected');
+        $('body').off('click').removeClass('blackedout');
+
+        if(!target.hasClass('block')){
+            $('body').on('click', function(){
+                $.fancybox.close();
+                $('body').off('click');
+            });
+        }
+    }
+
     $('.popup').hide();
     dom_popup
     .off('click')
     .off('mouseup')
     .off('mousemove')
     .off('mousedown')
+    .off('mousewheel')
     .css('display','inline-block')
     .on('click','.slider',function(e){
         e.stopPropagation();
@@ -403,9 +471,7 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
         rule.start();
         rule.setHandler(type,key,idx,value);
         rockpool.closePrompt();
-        dom_popup.hide();
-        target.removeClass('selected');
-        $('body').removeClass('blackedout');
+        popup_close();
 
     })
     .on('click','.option',function(e){
@@ -418,9 +484,8 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
         rule.start();
         rule.setHandler(type,key,idx);
         rockpool.closePrompt();
-        dom_popup.hide();
-        target.removeClass('selected');
-        $('body').removeClass('blackedout');
+        popup_close();
+
 
     });
 
@@ -428,17 +493,13 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
         target.addClass('selected');
 
         $('body').addClass('blackedout').on('click',function(){
-            dom_popup.hide();
-            target.removeClass('selected');
-            $('body').off('click').removeClass('blackedout');
+            popup_close();
         });
 
-        $('<li>').text('change').addClass('change').appendTo(dom_menu);
-        dom_popup.on('click','.change',function(){
-
-            dom_popup.hide();
-            target.removeClass('selected');
-            $('body').removeClass('blackedout');
+        $('<li>').text('change').addClass('change button').appendTo(dom_menu);
+        dom_popup.on('click','.change',function(e){
+            e.stopPropagation();
+            popup_close();
             rockpool.add(type,rule,target.index() - 2);
 
         });
@@ -463,12 +524,21 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
             dom_popup.css('margin-left', margin);
         }
 
-        $('.fancybox-overlay').on('click',function(){
-            dom_popup.hide();
+        /*$('.fancybox-overlay').off('click').on('click',function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            popup_close();
             dom_palette.removeClass('greyout');
-            target.removeClass('selected');
-            $('body').removeClass('blackedout');
             $('.fancybox-overlay').off('click');
+        })*/
+
+
+
+        $('body').off('click').on('click',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            popup_close();
+            dom_palette.removeClass('greyout');
         })
 
     }
@@ -479,8 +549,21 @@ rockpool.virtualConfigureMenu = function(target, type, rule, key, module){
 rockpool.moduleConfigureMenu = function(target, type, rule, index, module){
 
     var options = module.getOptions(type);
-
     var dom_popup = target.find('.popup.' + module.key);
+
+    var popup_close = function(){
+        dom_popup.hide();
+        target.removeClass('selected');
+        $('body').off('click').removeClass('blackedout');
+
+        if(!target.hasClass('block')){
+            $('body').on('click', function(){
+                $.fancybox.close();
+                $('body').off('click');
+            });
+        }
+    }
+
     if(dom_popup.length == 0){
 
         var dom_popup = $('<div><ul>').addClass('popup').addClass(module.key).appendTo(target);
@@ -514,9 +597,7 @@ rockpool.moduleConfigureMenu = function(target, type, rule, index, module){
         rule.setHandler(type,key,idx);
 
         rockpool.closePrompt();
-        dom_popup.hide();
-        target.removeClass('selected');
-        $('body').removeClass('blackedout');
+        popup_close();
 
     });
 
@@ -526,19 +607,14 @@ rockpool.moduleConfigureMenu = function(target, type, rule, index, module){
         $('body')
         .addClass('blackedout')
         .on('click',function(){
-            dom_popup.hide();
-            target.removeClass('selected');
-            $('body').off('click').removeClass('blackedout');
+            popup_close();
         });
 
-        $('<li>').text('change').addClass('change').appendTo(dom_menu);
-        dom_popup.on('click','.change',function(){
-
-            dom_popup.hide();
-            target.removeClass('selected');
-        $('body').removeClass('blackedout');
+        $('<li>').text('change').addClass('change button').appendTo(dom_menu);
+            dom_popup.on('click','.change',function(e){
+            e.stopPropagation();
+            popup_close();
             rockpool.add(type,rule,target.index() - 2);
-
         });
     }
     else
@@ -560,11 +636,11 @@ rockpool.moduleConfigureMenu = function(target, type, rule, index, module){
             dom_popup.css('margin-left', margin);
         }
 
-        $('.fancybox-overlay').on('click',function(){
-            dom_popup.hide();
+        $('body').off('click').on('click',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            popup_close();
             dom_palette.removeClass('greyout');
-            target.removeClass('selected');
-            $('.fancybox-overlay').off('click');
         })
     }
 }
